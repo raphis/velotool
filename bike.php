@@ -22,6 +22,53 @@ if (!$bike) {
     exit;
 }
 
+$photoError = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
+
+    if (isset($_POST['delete_photo_id'])) {
+        $photoId = (int) $_POST['delete_photo_id'];
+        $stmt = $pdo->prepare('SELECT filename FROM bike_photos WHERE id = ? AND bike_id = ?');
+        $stmt->execute([$photoId, $bikeId]);
+        $filename = $stmt->fetchColumn();
+        if ($filename) {
+            $pdo->prepare('DELETE FROM bike_photos WHERE id = ?')->execute([$photoId]);
+            @unlink(__DIR__ . '/uploads/bikes/' . $filename);
+        }
+        header('Location: /bike.php?id=' . $bikeId);
+        exit;
+    }
+
+    if (isset($_POST['upload_photo']) && !empty($_FILES['photo']['tmp_name']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+        $allowedMimes = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+        $maxBytes = 8 * 1024 * 1024;
+
+        if ($_FILES['photo']['size'] > $maxBytes) {
+            $photoError = 'Datei zu gross (max. 8 MB).';
+        } else {
+            $info = @getimagesize($_FILES['photo']['tmp_name']);
+            if ($info === false || !isset($allowedMimes[$info['mime']])) {
+                $photoError = 'Nur JPG, PNG oder WebP-Bilder erlaubt.';
+            } else {
+                $filename = bin2hex(random_bytes(16)) . '.' . $allowedMimes[$info['mime']];
+                $dest = __DIR__ . '/uploads/bikes/' . $filename;
+                if (move_uploaded_file($_FILES['photo']['tmp_name'], $dest)) {
+                    $pdo->prepare('INSERT INTO bike_photos (bike_id, filename, original_name) VALUES (?, ?, ?)')
+                        ->execute([$bikeId, $filename, $_FILES['photo']['name'] ?? null]);
+                    header('Location: /bike.php?id=' . $bikeId);
+                    exit;
+                }
+                $photoError = 'Upload fehlgeschlagen.';
+            }
+        }
+    }
+}
+
+$photos = $pdo->prepare('SELECT * FROM bike_photos WHERE bike_id = ? ORDER BY created_at DESC');
+$photos->execute([$bikeId]);
+$photos = $photos->fetchAll();
+
 $components = $pdo->prepare(
     "SELECT * FROM components WHERE bike_id = ? ORDER BY is_current DESC, category"
 );
@@ -67,6 +114,34 @@ require __DIR__ . '/src/views/header.php';
         <a class="button secondary" href="/maintenance_edit.php?bike_id=<?= (int) $bike['id'] ?>">+ Wartungseintrag</a>
     </div>
 </div>
+
+<section class="panel">
+    <h2>Fotos</h2>
+    <?php if ($photoError): ?><p class="error"><?= htmlspecialchars($photoError) ?></p><?php endif; ?>
+    <?php if ($photos): ?>
+    <div class="photo-grid">
+        <?php foreach ($photos as $p): ?>
+        <div class="photo-item">
+            <a href="/uploads/bikes/<?= htmlspecialchars($p['filename']) ?>" target="_blank" rel="noopener">
+                <img src="/uploads/bikes/<?= htmlspecialchars($p['filename']) ?>" alt="" loading="lazy">
+            </a>
+            <form method="post" onsubmit="return confirm('Foto wirklich löschen?');">
+                <?= csrf_field() ?>
+                <input type="hidden" name="delete_photo_id" value="<?= (int) $p['id'] ?>">
+                <button type="submit" class="photo-delete" aria-label="Foto löschen">×</button>
+            </form>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php else: ?>
+        <p class="muted">Noch keine Fotos hochgeladen.</p>
+    <?php endif; ?>
+    <form method="post" enctype="multipart/form-data" class="photo-upload-form">
+        <?= csrf_field() ?>
+        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required>
+        <button type="submit" name="upload_photo" value="1" class="button secondary">Foto hochladen</button>
+    </form>
+</section>
 
 <section class="panel">
     <h2>Details</h2>

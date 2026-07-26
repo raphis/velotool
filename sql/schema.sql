@@ -40,6 +40,15 @@ CREATE TABLE IF NOT EXISTS bikes (
     CONSTRAINT fk_bikes_owner FOREIGN KEY (owner_person_id) REFERENCES people(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS bike_photos (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    bike_id INT UNSIGNED NOT NULL,
+    filename VARCHAR(64) NOT NULL COMMENT 'Dateiname in uploads/bikes/, serverseitig generiert',
+    original_name VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_bike_photos_bike FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS components (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     bike_id INT UNSIGNED NOT NULL,

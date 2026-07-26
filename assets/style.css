@@ -90,6 +90,7 @@ a:hover { text-decoration: underline; }
 }
 .card:hover { border-color: var(--teal); text-decoration: none; }
 .card h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.card-photo { width: calc(100% + 2.5rem); max-width: none; margin: -1rem -1.25rem 0.75rem; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px 12px 0 0; display: block; }
 .card.inactive { opacity: 0.55; }
 .owner { margin: 0.4rem 0 0; }
 
@@ -171,6 +172,38 @@ a:hover { text-decoration: underline; }
 .component-picker label.checkbox { font-size: 0.95rem; color: var(--text); }
 .form label.parts-used-row { flex-direction: row; align-items: center; gap: 0.6rem; font-size: 0.95rem; color: var(--text); }
 .parts-used-row input[type="number"] { width: 4.5rem; flex: none; }
+
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.photo-item { position: relative; }
+.photo-item img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: block;
+}
+.photo-item form { position: absolute; top: 0.3rem; right: 0.3rem; margin: 0; }
+.photo-delete {
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 1.6rem;
+    height: 1.6rem;
+    line-height: 1.6rem;
+    text-align: center;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+}
+.photo-delete:hover { background: #b3261e; }
+.photo-upload-form { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 
 .error { color: #b3261e; }
 

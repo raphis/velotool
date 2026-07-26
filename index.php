@@ -19,6 +19,7 @@ if (!Auth::isLoggedIn()) {
 $pdo = Database::get();
 $bikes = $pdo->query(
     "SELECT b.*, p.name AS owner_name,
+        (SELECT bp.filename FROM bike_photos bp WHERE bp.bike_id = b.id ORDER BY bp.created_at DESC LIMIT 1) AS photo_filename,
         GREATEST(b.updated_at, COALESCE(MAX(l.log_date), b.updated_at), COALESCE(MAX(l.created_at), b.updated_at), COALESCE(MAX(c.created_at), b.updated_at)) AS last_activity
      FROM bikes b
      LEFT JOIN people p ON p.id = b.owner_person_id
@@ -39,10 +40,12 @@ require __DIR__ . '/src/views/header.php';
 <div class="card-grid">
 <?php foreach ($bikes as $bike): ?>
     <a class="card bike-card<?= $bike['is_active'] ? '' : ' inactive' ?>" href="/bike.php?id=<?= (int) $bike['id'] ?>">
+        <?php if ($bike['photo_filename']): ?><img class="card-photo" src="/uploads/bikes/<?= htmlspecialchars($bike['photo_filename']) ?>" alt=""><?php endif; ?>
         <h2><?= htmlspecialchars($bike['name']) ?></h2>
         <p class="muted"><?= htmlspecialchars(trim($bike['brand'] . ' ' . $bike['model'])) ?></p>
         <?php if ($bike['owner_name']): ?><p class="owner">👤 <?= htmlspecialchars($bike['owner_name']) ?></p><?php endif; ?>
         <?php if ($bike['frame_number']): ?><p class="muted small">Rahmen-Nr.: <?= htmlspecialchars($bike['frame_number']) ?></p><?php endif; ?>
+        <?php if ($bike['registration_number']): ?><p class="muted small">Kontrollschild-Nr.: <?= htmlspecialchars($bike['registration_number']) ?></p><?php endif; ?>
     </a>
 <?php endforeach; ?>
 <?php if (!$bikes): ?>
