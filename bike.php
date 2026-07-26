@@ -116,7 +116,23 @@ require __DIR__ . '/src/views/header.php';
 </div>
 
 <section class="panel">
-    <h2>Fotos</h2>
+    <h2>Details</h2>
+    <dl class="detail-grid">
+        <?php if ($bike['owner_name']): ?><dt>Gehört</dt><dd><?= htmlspecialchars($bike['owner_name']) ?></dd><?php endif; ?>
+        <?php if ($bike['frame_number']): ?><dt>Rahmennummer</dt><dd><?= htmlspecialchars($bike['frame_number']) ?></dd><?php endif; ?>
+        <?php if ($bike['registration_number']): ?><dt>Kontrollschild-Nr.</dt><dd><?= htmlspecialchars($bike['registration_number']) ?></dd><?php endif; ?>
+        <?php if ($bike['frame_size']): ?><dt>Rahmengrösse</dt><dd><?= htmlspecialchars($bike['frame_size']) ?></dd><?php endif; ?>
+        <?php if ($bike['color']): ?><dt>Farbe</dt><dd><?= htmlspecialchars($bike['color']) ?></dd><?php endif; ?>
+        <?php if ($bike['purchase_date']): ?><dt>Kaufdatum</dt><dd><?= htmlspecialchars($bike['purchase_date']) ?></dd><?php endif; ?>
+        <?php if ($bike['purchase_price']): ?><dt>Kaufpreis</dt><dd><?= htmlspecialchars($bike['purchase_price_currency']) ?> <?= htmlspecialchars($bike['purchase_price']) ?></dd><?php endif; ?>
+        <?php if ($bike['dealer']): ?><dt>Händler</dt><dd><?= htmlspecialchars($bike['dealer']) ?></dd><?php endif; ?>
+        <?php if ($bike['weight_kg']): ?><dt>Gewicht</dt><dd><?= htmlspecialchars($bike['weight_kg']) ?> kg</dd><?php endif; ?>
+    </dl>
+    <?php if ($bike['notes']): ?><p class="notes"><?= nl2br(htmlspecialchars($bike['notes'])) ?></p><?php endif; ?>
+</section>
+
+<details class="panel collapsible"<?= $photos ? ' open' : '' ?>>
+    <summary><h2>Fotos<?= $photos ? ' (' . count($photos) . ')' : '' ?></h2></summary>
     <?php if ($photoError): ?><p class="error"><?= htmlspecialchars($photoError) ?></p><?php endif; ?>
     <?php if ($photos): ?>
     <div class="photo-grid">
@@ -141,23 +157,7 @@ require __DIR__ . '/src/views/header.php';
         <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required>
         <button type="submit" name="upload_photo" value="1" class="button secondary">Foto hochladen</button>
     </form>
-</section>
-
-<section class="panel">
-    <h2>Details</h2>
-    <dl class="detail-grid">
-        <?php if ($bike['owner_name']): ?><dt>Gehört</dt><dd><?= htmlspecialchars($bike['owner_name']) ?></dd><?php endif; ?>
-        <?php if ($bike['frame_number']): ?><dt>Rahmennummer</dt><dd><?= htmlspecialchars($bike['frame_number']) ?></dd><?php endif; ?>
-        <?php if ($bike['registration_number']): ?><dt>Kontrollschild-Nr.</dt><dd><?= htmlspecialchars($bike['registration_number']) ?></dd><?php endif; ?>
-        <?php if ($bike['frame_size']): ?><dt>Rahmengrösse</dt><dd><?= htmlspecialchars($bike['frame_size']) ?></dd><?php endif; ?>
-        <?php if ($bike['color']): ?><dt>Farbe</dt><dd><?= htmlspecialchars($bike['color']) ?></dd><?php endif; ?>
-        <?php if ($bike['purchase_date']): ?><dt>Kaufdatum</dt><dd><?= htmlspecialchars($bike['purchase_date']) ?></dd><?php endif; ?>
-        <?php if ($bike['purchase_price']): ?><dt>Kaufpreis</dt><dd><?= htmlspecialchars($bike['purchase_price_currency']) ?> <?= htmlspecialchars($bike['purchase_price']) ?></dd><?php endif; ?>
-        <?php if ($bike['dealer']): ?><dt>Händler</dt><dd><?= htmlspecialchars($bike['dealer']) ?></dd><?php endif; ?>
-        <?php if ($bike['weight_kg']): ?><dt>Gewicht</dt><dd><?= htmlspecialchars($bike['weight_kg']) ?> kg</dd><?php endif; ?>
-    </dl>
-    <?php if ($bike['notes']): ?><p class="notes"><?= nl2br(htmlspecialchars($bike['notes'])) ?></p><?php endif; ?>
-</section>
+</details>
 
 <section class="panel">
     <h2>Komponenten</h2>

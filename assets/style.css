@@ -103,6 +103,23 @@ a:hover { text-decoration: underline; }
 }
 .panel h2 { margin-top: 0; font-size: 1.05rem; }
 
+.collapsible summary {
+    cursor: pointer;
+    list-style: none;
+}
+.collapsible summary::-webkit-details-marker { display: none; }
+.collapsible summary h2 { display: inline-block; margin: 0; }
+.collapsible summary::before {
+    content: '▸';
+    display: inline-block;
+    width: 1em;
+    margin-right: 0.4rem;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+}
+.collapsible[open] summary::before { transform: rotate(90deg); }
+.collapsible[open] summary { margin-bottom: 1rem; }
+
 .detail-grid { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; margin: 0; }
 .detail-grid dt { color: var(--muted); }
 .detail-grid dd { margin: 0; }
