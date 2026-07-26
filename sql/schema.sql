@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS bikes (
     frame_number VARCHAR(100) NULL COMMENT 'Rahmennummer',
     purchase_date DATE NULL,
     purchase_price DECIMAL(10,2) NULL,
+    purchase_price_currency ENUM('CHF','EUR') NOT NULL DEFAULT 'CHF',
     weight_kg DECIMAL(5,2) NULL,
     notes TEXT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
