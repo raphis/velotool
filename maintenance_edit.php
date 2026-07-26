@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $data = [
         'log_date' => $_POST['log_date'] ?: date('Y-m-d'),
-        'category' => trim($_POST['category'] ?? ''),
+        'category' => in_array($_POST['category'] ?? '', ['Service', 'Inspektion', 'Reparatur'], true) ? $_POST['category'] : '',
         'description' => trim($_POST['description'] ?? ''),
         'mileage_km' => $_POST['mileage_km'] !== '' ? (int) $_POST['mileage_km'] : null,
         'cost' => $_POST['cost'] !== '' ? $_POST['cost'] : null,
@@ -155,7 +155,12 @@ require __DIR__ . '/src/views/header.php';
     <input type="hidden" name="bike_id" value="<?= (int) $bikeId ?>">
 
     <label>Datum*<input type="date" name="log_date" value="<?= htmlspecialchars($log['log_date']) ?>" required></label>
-    <label>Kategorie*<input type="text" name="category" value="<?= htmlspecialchars($log['category']) ?>" placeholder="z.B. Service, Reparatur, Inspektion" required></label>
+    <label>Kategorie*<select name="category" required>
+        <option value="">–</option>
+        <?php foreach (['Service', 'Inspektion', 'Reparatur'] as $cat): ?>
+        <option value="<?= $cat ?>" <?= $log['category'] === $cat ? 'selected' : '' ?>><?= $cat ?></option>
+        <?php endforeach; ?>
+    </select></label>
 
     <fieldset class="full component-picker">
         <legend>Betroffene Komponente(n)</legend>
