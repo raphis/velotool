@@ -6,10 +6,11 @@ $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $bikeId = (int) ($_GET['bike_id'] ?? $_POST['bike_id'] ?? 0);
 
-$log = ['log_date' => date('Y-m-d'), 'category' => '', 'description' => '', 'component_id' => '',
+$log = ['log_date' => date('Y-m-d'), 'category' => '', 'description' => '',
     'mileage_km' => '', 'cost' => '', 'performed_by' => '', 'chain_wear_percent' => '',
     'disc_thickness_front_mm' => '', 'disc_thickness_rear_mm' => '', 'pad_condition_front_percent' => '',
     'pad_condition_rear_percent' => '', 'other_measurements' => ''];
+$selectedComponentIds = [];
 
 if ($id) {
     $stmt = $pdo->prepare('SELECT * FROM maintenance_logs WHERE id = ?');
@@ -18,6 +19,10 @@ if ($id) {
     if ($found) {
         $log = $found;
         $bikeId = (int) $found['bike_id'];
+
+        $stmt = $pdo->prepare('SELECT component_id FROM maintenance_log_components WHERE log_id = ?');
+        $stmt->execute([$id]);
+        $selectedComponentIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
     }
 }
 
@@ -29,17 +34,20 @@ if (!$bikeId) {
 $components = $pdo->prepare('SELECT id, name, category FROM components WHERE bike_id = ? ORDER BY category, name');
 $components->execute([$bikeId]);
 $components = $components->fetchAll();
+$validComponentIds = array_column($components, 'id');
 
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
 
+    $postedComponentIds = array_map('intval', $_POST['component_ids'] ?? []);
+    $selectedComponentIds = array_values(array_intersect($postedComponentIds, $validComponentIds));
+
     $data = [
         'log_date' => $_POST['log_date'] ?: date('Y-m-d'),
         'category' => trim($_POST['category'] ?? ''),
         'description' => trim($_POST['description'] ?? ''),
-        'component_id' => $_POST['component_id'] !== '' ? (int) $_POST['component_id'] : null,
         'mileage_km' => $_POST['mileage_km'] !== '' ? (int) $_POST['mileage_km'] : null,
         'cost' => $_POST['cost'] !== '' ? $_POST['cost'] : null,
         'performed_by' => trim($_POST['performed_by'] ?? '') ?: null,
@@ -57,16 +65,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         if ($id) {
-            $pdo->prepare('UPDATE maintenance_logs SET log_date=?, category=?, description=?, component_id=?, mileage_km=?, cost=?, performed_by=?,
+            $pdo->prepare('UPDATE maintenance_logs SET log_date=?, category=?, description=?, mileage_km=?, cost=?, performed_by=?,
                     chain_wear_percent=?, disc_thickness_front_mm=?, disc_thickness_rear_mm=?, pad_condition_front_percent=?, pad_condition_rear_percent=?, other_measurements=?
                     WHERE id=?')
                 ->execute([...array_values($data), $id]);
         } else {
-            $pdo->prepare('INSERT INTO maintenance_logs (bike_id, log_date, category, description, component_id, mileage_km, cost, performed_by,
+            $pdo->prepare('INSERT INTO maintenance_logs (bike_id, log_date, category, description, mileage_km, cost, performed_by,
                     chain_wear_percent, disc_thickness_front_mm, disc_thickness_rear_mm, pad_condition_front_percent, pad_condition_rear_percent, other_measurements, created_by_user_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
                 ->execute([$bikeId, ...array_values($data), Auth::userId()]);
+            $id = (int) $pdo->lastInsertId();
         }
+
+        $pdo->prepare('DELETE FROM maintenance_log_components WHERE log_id = ?')->execute([$id]);
+        if ($selectedComponentIds) {
+            $ins = $pdo->prepare('INSERT INTO maintenance_log_components (log_id, component_id) VALUES (?, ?)');
+            foreach ($selectedComponentIds as $componentId) {
+                $ins->execute([$id, $componentId]);
+            }
+        }
+
         header('Location: /bike.php?id=' . $bikeId);
         exit;
     }
@@ -86,12 +104,18 @@ require __DIR__ . '/src/views/header.php';
 
     <label>Datum*<input type="date" name="log_date" value="<?= htmlspecialchars($log['log_date']) ?>" required></label>
     <label>Kategorie*<input type="text" name="category" value="<?= htmlspecialchars($log['category']) ?>" placeholder="z.B. Service, Reparatur, Inspektion" required></label>
-    <label>Komponente<select name="component_id">
-        <option value="">–</option>
-        <?php foreach ($components as $c): ?>
-        <option value="<?= (int) $c['id'] ?>" <?= (int) ($log['component_id'] ?? 0) === (int) $c['id'] ? 'selected' : '' ?>><?= htmlspecialchars($c['category'] . ' – ' . $c['name']) ?></option>
-        <?php endforeach; ?>
-    </select></label>
+
+    <fieldset class="full component-picker">
+        <legend>Betroffene Komponente(n)</legend>
+        <?php if ($components): ?>
+            <?php foreach ($components as $c): ?>
+            <label class="checkbox"><input type="checkbox" name="component_ids[]" value="<?= (int) $c['id'] ?>" <?= in_array((int) $c['id'], $selectedComponentIds, true) ? 'checked' : '' ?>> <?= htmlspecialchars($c['category'] . ' – ' . $c['name']) ?></label>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p class="muted">Noch keine Komponenten für dieses Velo erfasst.</p>
+        <?php endif; ?>
+    </fieldset>
+
     <label class="full">Beschreibung*<textarea name="description" rows="3" required><?= htmlspecialchars($log['description']) ?></textarea></label>
     <label>Kilometerstand<input type="number" name="mileage_km" value="<?= htmlspecialchars((string) ($log['mileage_km'] ?? '')) ?>"></label>
     <label>Kosten (CHF)<input type="number" step="0.01" name="cost" value="<?= htmlspecialchars((string) ($log['cost'] ?? '')) ?>"></label>

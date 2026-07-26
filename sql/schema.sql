@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS components (
 CREATE TABLE IF NOT EXISTS maintenance_logs (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     bike_id INT UNSIGNED NOT NULL,
-    component_id INT UNSIGNED NULL,
     log_date DATE NOT NULL,
     category VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
@@ -70,8 +69,17 @@ CREATE TABLE IF NOT EXISTS maintenance_logs (
     created_by_user_id INT UNSIGNED NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_logs_bike FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE,
-    CONSTRAINT fk_logs_component FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE SET NULL,
     CONSTRAINT fk_logs_user FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Ein Wartungseintrag kann mehrere Komponenten betreffen (z.B. Service:
+-- Kette + Bremsscheibe vorne + Bremsscheibe hinten in einem Eintrag).
+CREATE TABLE IF NOT EXISTS maintenance_log_components (
+    log_id INT UNSIGNED NOT NULL,
+    component_id INT UNSIGNED NOT NULL,
+    PRIMARY KEY (log_id, component_id),
+    CONSTRAINT fk_mlc_log FOREIGN KEY (log_id) REFERENCES maintenance_logs(id) ON DELETE CASCADE,
+    CONSTRAINT fk_mlc_component FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS parts_catalog (

@@ -29,9 +29,13 @@ $components->execute([$bikeId]);
 $components = $components->fetchAll();
 
 $logs = $pdo->prepare(
-    'SELECT l.*, c.name AS component_name
-     FROM maintenance_logs l LEFT JOIN components c ON c.id = l.component_id
-     WHERE l.bike_id = ? ORDER BY l.log_date DESC, l.id DESC'
+    "SELECT l.*, GROUP_CONCAT(c.category, ' – ', c.name ORDER BY c.category SEPARATOR ', ') AS component_names
+     FROM maintenance_logs l
+     LEFT JOIN maintenance_log_components mlc ON mlc.log_id = l.id
+     LEFT JOIN components c ON c.id = mlc.component_id
+     WHERE l.bike_id = ?
+     GROUP BY l.id
+     ORDER BY l.log_date DESC, l.id DESC"
 );
 $logs->execute([$bikeId]);
 $logs = $logs->fetchAll();
@@ -114,7 +118,7 @@ require __DIR__ . '/src/views/header.php';
             ?>
             <tr>
                 <td><?= htmlspecialchars($l['log_date']) ?></td>
-                <td><?= htmlspecialchars($l['category']) ?><?= $l['component_name'] ? ' (' . htmlspecialchars($l['component_name']) . ')' : '' ?></td>
+                <td><?= htmlspecialchars($l['category']) ?><?= $l['component_names'] ? ' (' . htmlspecialchars($l['component_names']) . ')' : '' ?></td>
                 <td><?= nl2br(htmlspecialchars($l['description'])) ?></td>
                 <td><?= $l['mileage_km'] !== null ? (int) $l['mileage_km'] : '' ?></td>
                 <td><?= $l['cost'] !== null ? 'CHF ' . htmlspecialchars($l['cost']) : '' ?></td>
