@@ -88,6 +88,8 @@ CREATE TABLE IF NOT EXISTS parts_catalog (
     manufacturer VARCHAR(150) NULL,
     price_chf DECIMAL(6,2) NULL,
     note VARCHAR(255) NULL,
+    stock_qty INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Wieviele Stueck aktuell zuhause auf Lager sind',
+    stock_note VARCHAR(255) NULL COMMENT 'z.B. "1x reserviert fuers Radon"',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

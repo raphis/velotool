@@ -28,7 +28,7 @@ $components = $pdo->prepare('SELECT id, name, category FROM components WHERE bik
 $components->execute([$bikeId]);
 $components = $components->fetchAll();
 
-$catalog = $pdo->query('SELECT id, name, manufacturer, price_chf FROM parts_catalog ORDER BY manufacturer, name')->fetchAll();
+$catalog = $pdo->query('SELECT id, name, manufacturer, price_chf, stock_qty, stock_note FROM parts_catalog ORDER BY manufacturer, name')->fetchAll();
 
 $errors = [];
 
@@ -83,10 +83,11 @@ require __DIR__ . '/src/views/header.php';
         <option value="<?= (int) $c['id'] ?>"
             data-name="<?= htmlspecialchars($c['name'], ENT_QUOTES) ?>"
             data-price="<?= htmlspecialchars((string) $c['price_chf'], ENT_QUOTES) ?>">
-            <?= htmlspecialchars(($c['manufacturer'] ? $c['manufacturer'] . ' – ' : '') . $c['name']) ?> (<?= number_format((float) $c['price_chf'], 2) ?> CHF)
+            <?= htmlspecialchars(($c['manufacturer'] ? $c['manufacturer'] . ' – ' : '') . $c['name']) ?> (<?= number_format((float) $c['price_chf'], 2) ?> CHF)<?= (int) $c['stock_qty'] > 0 ? ' — auf Lager: ' . (int) $c['stock_qty'] . 'x' : '' ?>
         </option>
         <?php endforeach; ?>
     </select></label>
+    <p class="muted small"><a href="/catalog.php">Katalog &amp; Lagerbestand verwalten</a></p>
     <?php endif; ?>
 
     <label>Teil*<input type="text" name="part_name" id="partNameField" value="<?= htmlspecialchars($part['part_name']) ?>" required></label>

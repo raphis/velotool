@@ -19,6 +19,7 @@
     <?php if (Auth::isLoggedIn()): ?>
     <nav class="topnav">
         <a href="/index.php">Velos</a>
+        <a href="/catalog.php">Katalog &amp; Lager</a>
         <span class="user">
             <?php if (Auth::userPicture()): ?><img src="<?= htmlspecialchars(Auth::userPicture()) ?>" class="avatar" alt=""><?php endif; ?>
             <?= htmlspecialchars(Auth::userName()) ?>
