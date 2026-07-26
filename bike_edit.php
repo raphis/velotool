@@ -5,7 +5,7 @@ Auth::requireLogin();
 $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $bike = ['name' => '', 'brand' => '', 'model' => '', 'model_year' => '', 'frame_size' => '', 'color' => '',
-    'frame_number' => '', 'registration_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'purchase_price_currency' => 'CHF', 'weight_kg' => '', 'notes' => '',
+    'frame_number' => '', 'registration_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'purchase_price_currency' => 'CHF', 'dealer' => '', 'weight_kg' => '', 'notes' => '',
     'owner_person_id' => '', 'is_active' => 1];
 
 if ($id) {
@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'purchase_date' => $_POST['purchase_date'] ?: null,
         'purchase_price' => $_POST['purchase_price'] !== '' ? $_POST['purchase_price'] : null,
         'purchase_price_currency' => in_array($_POST['purchase_price_currency'] ?? '', ['CHF', 'EUR'], true) ? $_POST['purchase_price_currency'] : 'CHF',
+        'dealer' => trim($_POST['dealer'] ?? '') ?: null,
         'weight_kg' => $_POST['weight_kg'] !== '' ? $_POST['weight_kg'] : null,
         'notes' => trim($_POST['notes'] ?? '') ?: null,
         'owner_person_id' => $_POST['owner_person_id'] !== '' ? (int) $_POST['owner_person_id'] : null,
@@ -49,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         if ($id) {
             $sql = 'UPDATE bikes SET name=?, brand=?, model=?, model_year=?, frame_size=?, color=?, frame_number=?, registration_number=?,
-                    purchase_date=?, purchase_price=?, purchase_price_currency=?, weight_kg=?, notes=?, owner_person_id=?, is_active=? WHERE id=?';
+                    purchase_date=?, purchase_price=?, purchase_price_currency=?, dealer=?, weight_kg=?, notes=?, owner_person_id=?, is_active=? WHERE id=?';
             $pdo->prepare($sql)->execute([...array_values($data), $id]);
         } else {
             $cols = implode(',', array_keys($data));
@@ -95,6 +96,7 @@ require __DIR__ . '/src/views/header.php';
         <option value="<?= $cur ?>" <?= $bike['purchase_price_currency'] === $cur ? 'selected' : '' ?>><?= $cur ?></option>
         <?php endforeach; ?>
     </select></label>
+    <label>Händler<input type="text" name="dealer" value="<?= htmlspecialchars($bike['dealer'] ?? '') ?>" placeholder="z.B. Stöckli Swiss Sports AG, Wädenswil"></label>
     <label>Gewicht (kg)<input type="number" step="0.01" name="weight_kg" value="<?= htmlspecialchars((string) ($bike['weight_kg'] ?? '')) ?>"></label>
     <label class="full">Notizen<textarea name="notes" rows="4"><?= htmlspecialchars($bike['notes'] ?? '') ?></textarea></label>
     <label class="checkbox"><input type="checkbox" name="is_active" <?= $bike['is_active'] ? 'checked' : '' ?>> Aktiv im Einsatz</label>

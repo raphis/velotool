@@ -5,8 +5,7 @@ Auth::requireLogin();
 $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 
-$item = ['name' => '', 'manufacturer' => '', 'supplier' => '', 'price_chf' => '', 'note' => '', 'stock_qty' => 0,
-    'stock_note' => ''];
+$item = ['name' => '', 'manufacturer' => '', 'supplier' => '', 'price_chf' => '', 'note' => '', 'stock_qty' => 0];
 $selectedBikeIds = [];
 
 if ($id) {
@@ -46,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'price_chf' => $_POST['price_chf'] !== '' ? $_POST['price_chf'] : null,
         'note' => trim($_POST['note'] ?? '') ?: null,
         'stock_qty' => $_POST['stock_qty'] !== '' ? (int) $_POST['stock_qty'] : 0,
-        'stock_note' => trim($_POST['stock_note'] ?? '') ?: null,
     ];
 
     if ($data['name'] === '') {
@@ -55,10 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         if ($id) {
-            $pdo->prepare('UPDATE parts_catalog SET name=?, manufacturer=?, supplier=?, price_chf=?, note=?, stock_qty=?, stock_note=? WHERE id=?')
+            $pdo->prepare('UPDATE parts_catalog SET name=?, manufacturer=?, supplier=?, price_chf=?, note=?, stock_qty=? WHERE id=?')
                 ->execute([...array_values($data), $id]);
         } else {
-            $pdo->prepare('INSERT INTO parts_catalog (name, manufacturer, supplier, price_chf, note, stock_qty, stock_note) VALUES (?, ?, ?, ?, ?, ?, ?)')
+            $pdo->prepare('INSERT INTO parts_catalog (name, manufacturer, supplier, price_chf, note, stock_qty) VALUES (?, ?, ?, ?, ?, ?)')
                 ->execute(array_values($data));
             $id = (int) $pdo->lastInsertId();
         }

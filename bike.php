@@ -78,6 +78,7 @@ require __DIR__ . '/src/views/header.php';
         <?php if ($bike['color']): ?><dt>Farbe</dt><dd><?= htmlspecialchars($bike['color']) ?></dd><?php endif; ?>
         <?php if ($bike['purchase_date']): ?><dt>Kaufdatum</dt><dd><?= htmlspecialchars($bike['purchase_date']) ?></dd><?php endif; ?>
         <?php if ($bike['purchase_price']): ?><dt>Kaufpreis</dt><dd><?= htmlspecialchars($bike['purchase_price_currency']) ?> <?= htmlspecialchars($bike['purchase_price']) ?></dd><?php endif; ?>
+        <?php if ($bike['dealer']): ?><dt>Händler</dt><dd><?= htmlspecialchars($bike['dealer']) ?></dd><?php endif; ?>
         <?php if ($bike['weight_kg']): ?><dt>Gewicht</dt><dd><?= htmlspecialchars($bike['weight_kg']) ?> kg</dd><?php endif; ?>
     </dl>
     <?php if ($bike['notes']): ?><p class="notes"><?= nl2br(htmlspecialchars($bike['notes'])) ?></p><?php endif; ?>
@@ -156,7 +157,6 @@ require __DIR__ . '/src/views/header.php';
                     <?php else: ?>
                     <span class="muted small">–</span>
                     <?php endif; ?>
-                    <?php if ($c['stock_note']): ?><span class="muted small"><?= htmlspecialchars($c['stock_note']) ?></span><?php endif; ?>
                 </td>
                 <td><a href="/catalog_edit.php?id=<?= (int) $c['id'] ?>">bearbeiten</a></td>
             </tr>

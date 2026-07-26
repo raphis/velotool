@@ -36,7 +36,6 @@ require __DIR__ . '/src/views/header.php';
                 <?php else: ?>
                 <span class="muted small">–</span>
                 <?php endif; ?>
-                <?php if ($i['stock_note']): ?><span class="muted small"><?= htmlspecialchars($i['stock_note']) ?></span><?php endif; ?>
             </td>
             <td><a href="/catalog_edit.php?id=<?= (int) $i['id'] ?>">bearbeiten</a></td>
         </tr>

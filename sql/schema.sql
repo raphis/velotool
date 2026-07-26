@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS bikes (
     purchase_date DATE NULL,
     purchase_price DECIMAL(10,2) NULL,
     purchase_price_currency ENUM('CHF','EUR') NOT NULL DEFAULT 'CHF',
+    dealer VARCHAR(150) NULL COMMENT 'Haendler/Geschaeft, wo das Velo gekauft wurde',
     weight_kg DECIMAL(5,2) NULL,
     notes TEXT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -92,7 +93,6 @@ CREATE TABLE IF NOT EXISTS parts_catalog (
     price_chf DECIMAL(6,2) NULL,
     note VARCHAR(255) NULL,
     stock_qty INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Wieviele Stueck aktuell zuhause auf Lager sind',
-    stock_note VARCHAR(255) NULL COMMENT 'z.B. "1x reserviert fuers Radon"',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

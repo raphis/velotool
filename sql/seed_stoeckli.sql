@@ -3,7 +3,7 @@
 -- P-Bon Montage/Bike 132028950, 12.05.2015) -- Artikel-Nr./Serien-Nr. siehe
 -- components.details. Bremsen/Schaltung sind auf dem Beleg nicht separat
 -- aufgefuehrt (im Rahmenpreis enthalten) -- bitte am Velo pruefen und ergaenzen.
-INSERT INTO bikes (name, brand, model, color, frame_size, purchase_date, purchase_price, purchase_price_currency, owner_person_id, notes)
+INSERT INTO bikes (name, brand, model, color, frame_size, purchase_date, purchase_price, purchase_price_currency, dealer, owner_person_id, notes)
 VALUES (
     'Stöckli e.t. 1 Urban',
     'Stöckli',
@@ -13,6 +13,7 @@ VALUES (
     '2015-05-12',
     5100.00,
     'CHF',
+    'Stöckli Swiss Sports AG, Wädenswil',
     (SELECT id FROM people WHERE name = 'Raphael Thoma'),
     'Urban-Ausstattung mit Schutzblech, Gepäckträger, Zentralständer, Beleuchtung. Kassenzettel Stöckli Swiss Sports AG vom 12.05.2015 (Bon 24048, P-Bon Montage/Bike 132028950) liegt vor, Details siehe Komponenten. Batterie-Entsorgungsgebühr CHF 20.00 war Teil der Rechnung (kein Bike-Teil). Stöckli hat die E-Bike-Sparte 2018 eingestellt, Service/Ersatzteile für den Go-SwissDrive-Motor laufen seither über youmo.ch.'
 );
@@ -34,4 +35,6 @@ INSERT INTO components (bike_id, category, name, manufacturer, details) VALUES
 (@bike_id, 'Schloss',      'Faltschloss FS 300/85, schwarz',            'Trelock',       'Art.-Nr. 122073520 (Kassenzettel 12.05.2015).'),
 (@bike_id, 'Sonstiges',    'PLET-15-Geni, 26"/28" (Bezeichnung laut Kassenzettel, nicht eindeutig zuordenbar)', 'Pletscher (vermutet)', 'Art.-Nr. 144099012, CHF 65.00 (Kassenzettel 12.05.2015). Genaue Funktion unklar, evtl. Gepäckträger-Zubehör -- bitte am Velo pruefen.'),
 (@bike_id, 'Bremsscheiben', 'SM-RT70-M, 180mm, min. 1.5mm',              'Shimano',       'Vorne & hinten dieselbe Scheibe. Gemessen 26.07.2026: vorne 1.7mm, hinten 1.7mm.'),
-(@bike_id, 'Bremsen',      'BL-T6000',                                   'Shimano',       'Vorne & hinten.');
+(@bike_id, 'Bremsen',      'BL-T6000',                                   'Shimano',       'Vorne & hinten.'),
+(@bike_id, 'Reifen',       'Contact Plus, 26x1.75, mit Reflexstreifen, schwarz', 'Continental', 'Art.-Nr. 56641 (velofactory.ch).'),
+(@bike_id, 'Kette',        'CN-E6090-10, 10-fach E-Bike, 138 Glieder',   'Shimano',       'Art.-Nr. 65773 (velofactory.ch).');
