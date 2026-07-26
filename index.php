@@ -18,9 +18,9 @@ if (!Auth::isLoggedIn()) {
 
 $pdo = Database::get();
 $bikes = $pdo->query(
-    'SELECT b.*, u.name AS owner_name
+    'SELECT b.*, p.name AS owner_name
      FROM bikes b
-     LEFT JOIN users u ON u.id = b.owner_user_id
+     LEFT JOIN people p ON p.id = b.owner_person_id
      ORDER BY b.is_active DESC, b.name'
 )->fetchAll();
 

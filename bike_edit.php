@@ -6,7 +6,7 @@ $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $bike = ['name' => '', 'brand' => '', 'model' => '', 'model_year' => '', 'frame_size' => '', 'color' => '',
     'serial_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'weight_kg' => '', 'notes' => '',
-    'owner_user_id' => '', 'is_active' => 1];
+    'owner_person_id' => '', 'is_active' => 1];
 
 if ($id) {
     $stmt = $pdo->prepare('SELECT * FROM bikes WHERE id = ?');
@@ -17,7 +17,7 @@ if ($id) {
     }
 }
 
-$users = $pdo->query('SELECT id, name FROM users ORDER BY name')->fetchAll();
+$people = $pdo->query('SELECT id, name FROM people ORDER BY name')->fetchAll();
 
 $errors = [];
 
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'purchase_price' => $_POST['purchase_price'] !== '' ? $_POST['purchase_price'] : null,
         'weight_kg' => $_POST['weight_kg'] !== '' ? $_POST['weight_kg'] : null,
         'notes' => trim($_POST['notes'] ?? '') ?: null,
-        'owner_user_id' => $_POST['owner_user_id'] !== '' ? (int) $_POST['owner_user_id'] : null,
+        'owner_person_id' => $_POST['owner_person_id'] !== '' ? (int) $_POST['owner_person_id'] : null,
         'is_active' => isset($_POST['is_active']) ? 1 : 0,
     ];
 
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         if ($id) {
             $sql = 'UPDATE bikes SET name=?, brand=?, model=?, model_year=?, frame_size=?, color=?, serial_number=?,
-                    purchase_date=?, purchase_price=?, weight_kg=?, notes=?, owner_user_id=?, is_active=? WHERE id=?';
+                    purchase_date=?, purchase_price=?, weight_kg=?, notes=?, owner_person_id=?, is_active=? WHERE id=?';
             $pdo->prepare($sql)->execute([...array_values($data), $id]);
         } else {
             $cols = implode(',', array_keys($data));
@@ -79,10 +79,10 @@ require __DIR__ . '/src/views/header.php';
     <label>Rahmengrösse<input type="text" name="frame_size" value="<?= htmlspecialchars($bike['frame_size'] ?? '') ?>"></label>
     <label>Farbe<input type="text" name="color" value="<?= htmlspecialchars($bike['color'] ?? '') ?>"></label>
     <label>Seriennummer<input type="text" name="serial_number" value="<?= htmlspecialchars($bike['serial_number'] ?? '') ?>"></label>
-    <label>Gehört<select name="owner_user_id">
+    <label>Gehört<select name="owner_person_id">
         <option value="">–</option>
-        <?php foreach ($users as $u): ?>
-        <option value="<?= (int) $u['id'] ?>" <?= (int) ($bike['owner_user_id'] ?? 0) === (int) $u['id'] ? 'selected' : '' ?>><?= htmlspecialchars($u['name']) ?></option>
+        <?php foreach ($people as $u): ?>
+        <option value="<?= (int) $u['id'] ?>" <?= (int) ($bike['owner_person_id'] ?? 0) === (int) $u['id'] ? 'selected' : '' ?>><?= htmlspecialchars($u['name']) ?></option>
         <?php endforeach; ?>
     </select></label>
     <label>Kaufdatum<input type="date" name="purchase_date" value="<?= htmlspecialchars($bike['purchase_date'] ?? '') ?>"></label>

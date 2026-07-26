@@ -6,8 +6,8 @@ $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $bikeId = (int) ($_GET['bike_id'] ?? $_POST['bike_id'] ?? 0);
 
-$part = ['part_name' => '', 'reason' => '', 'component_id' => '', 'status' => 'needed',
-    'priority' => 'normal', 'ordered_date' => ''];
+$part = ['part_name' => '', 'reason' => '', 'component_id' => '', 'catalog_item_id' => '', 'status' => 'needed',
+    'priority' => 'normal', 'price_chf' => '', 'ordered_date' => ''];
 
 if ($id) {
     $stmt = $pdo->prepare('SELECT * FROM parts_needed WHERE id = ?');
@@ -28,6 +28,8 @@ $components = $pdo->prepare('SELECT id, name, category FROM components WHERE bik
 $components->execute([$bikeId]);
 $components = $components->fetchAll();
 
+$catalog = $pdo->query('SELECT id, name, manufacturer, price_chf FROM parts_catalog ORDER BY manufacturer, name')->fetchAll();
+
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -37,8 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'part_name' => trim($_POST['part_name'] ?? ''),
         'reason' => trim($_POST['reason'] ?? '') ?: null,
         'component_id' => $_POST['component_id'] !== '' ? (int) $_POST['component_id'] : null,
+        'catalog_item_id' => $_POST['catalog_item_id'] !== '' ? (int) $_POST['catalog_item_id'] : null,
         'status' => in_array($_POST['status'] ?? '', ['needed', 'ordered', 'installed'], true) ? $_POST['status'] : 'needed',
         'priority' => in_array($_POST['priority'] ?? '', ['low', 'normal', 'high'], true) ? $_POST['priority'] : 'normal',
+        'price_chf' => $_POST['price_chf'] !== '' ? $_POST['price_chf'] : null,
         'ordered_date' => $_POST['ordered_date'] ?: null,
     ];
 
@@ -48,10 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         if ($id) {
-            $pdo->prepare('UPDATE parts_needed SET part_name=?, reason=?, component_id=?, status=?, priority=?, ordered_date=? WHERE id=?')
+            $pdo->prepare('UPDATE parts_needed SET part_name=?, reason=?, component_id=?, catalog_item_id=?, status=?, priority=?, price_chf=?, ordered_date=? WHERE id=?')
                 ->execute([...array_values($data), $id]);
         } else {
-            $pdo->prepare('INSERT INTO parts_needed (bike_id, part_name, reason, component_id, status, priority, ordered_date) VALUES (?, ?, ?, ?, ?, ?, ?)')
+            $pdo->prepare('INSERT INTO parts_needed (bike_id, part_name, reason, component_id, catalog_item_id, status, priority, price_chf, ordered_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
                 ->execute([$bikeId, ...array_values($data)]);
         }
         header('Location: /bike.php?id=' . $bikeId);
@@ -70,8 +74,23 @@ require __DIR__ . '/src/views/header.php';
     <?= csrf_field() ?>
     <input type="hidden" name="id" value="<?= (int) $id ?>">
     <input type="hidden" name="bike_id" value="<?= (int) $bikeId ?>">
+    <input type="hidden" name="catalog_item_id" value="<?= htmlspecialchars((string) ($part['catalog_item_id'] ?? '')) ?>">
 
-    <label>Teil*<input type="text" name="part_name" value="<?= htmlspecialchars($part['part_name']) ?>" required></label>
+    <?php if ($catalog): ?>
+    <label class="full">Aus Katalog übernehmen<select id="catalogPick" onchange="pickCatalogItem(this)">
+        <option value="">– manuell eingeben –</option>
+        <?php foreach ($catalog as $c): ?>
+        <option value="<?= (int) $c['id'] ?>"
+            data-name="<?= htmlspecialchars($c['name'], ENT_QUOTES) ?>"
+            data-price="<?= htmlspecialchars((string) $c['price_chf'], ENT_QUOTES) ?>">
+            <?= htmlspecialchars(($c['manufacturer'] ? $c['manufacturer'] . ' – ' : '') . $c['name']) ?> (<?= number_format((float) $c['price_chf'], 2) ?> CHF)
+        </option>
+        <?php endforeach; ?>
+    </select></label>
+    <?php endif; ?>
+
+    <label>Teil*<input type="text" name="part_name" id="partNameField" value="<?= htmlspecialchars($part['part_name']) ?>" required></label>
+    <label>Preis (CHF)<input type="number" step="0.01" name="price_chf" id="priceField" value="<?= htmlspecialchars((string) ($part['price_chf'] ?? '')) ?>"></label>
     <label>Komponente<select name="component_id">
         <option value="">–</option>
         <?php foreach ($components as $c): ?>
@@ -96,4 +115,17 @@ require __DIR__ . '/src/views/header.php';
         <a class="button secondary" href="/bike.php?id=<?= (int) $bikeId ?>">Abbrechen</a>
     </div>
 </form>
+
+<?php if ($catalog): ?>
+<script>
+function pickCatalogItem(select) {
+    var opt = select.options[select.selectedIndex];
+    document.querySelector('input[name="catalog_item_id"]').value = opt.value;
+    if (opt.value) {
+        document.getElementById('partNameField').value = opt.dataset.name;
+        document.getElementById('priceField').value = opt.dataset.price;
+    }
+}
+</script>
+<?php endif; ?>
 <?php require __DIR__ . '/src/views/footer.php'; ?>

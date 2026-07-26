@@ -11,9 +11,15 @@ CREATE TABLE IF NOT EXISTS users (
     last_login_at DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS people (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS bikes (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    owner_user_id INT UNSIGNED NULL,
+    owner_person_id INT UNSIGNED NULL,
     name VARCHAR(150) NOT NULL,
     brand VARCHAR(100) NULL,
     model VARCHAR(150) NULL,
@@ -28,7 +34,7 @@ CREATE TABLE IF NOT EXISTS bikes (
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_bikes_owner FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE SET NULL
+    CONSTRAINT fk_bikes_owner FOREIGN KEY (owner_person_id) REFERENCES people(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS components (
@@ -68,17 +74,29 @@ CREATE TABLE IF NOT EXISTS maintenance_logs (
     CONSTRAINT fk_logs_user FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS parts_catalog (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    manufacturer VARCHAR(150) NULL,
+    price_chf DECIMAL(6,2) NULL,
+    note VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS parts_needed (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     bike_id INT UNSIGNED NOT NULL,
     component_id INT UNSIGNED NULL,
+    catalog_item_id INT UNSIGNED NULL,
     part_name VARCHAR(255) NOT NULL,
     reason TEXT NULL,
     status ENUM('needed','ordered','installed') NOT NULL DEFAULT 'needed',
     priority ENUM('low','normal','high') NOT NULL DEFAULT 'normal',
+    price_chf DECIMAL(6,2) NULL,
     ordered_date DATE NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_parts_bike FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE,
-    CONSTRAINT fk_parts_component FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE SET NULL
+    CONSTRAINT fk_parts_component FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE SET NULL,
+    CONSTRAINT fk_parts_catalog FOREIGN KEY (catalog_item_id) REFERENCES parts_catalog(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

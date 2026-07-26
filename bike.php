@@ -6,8 +6,8 @@ $pdo = Database::get();
 $bikeId = (int) ($_GET['id'] ?? 0);
 
 $stmt = $pdo->prepare(
-    'SELECT b.*, u.name AS owner_name
-     FROM bikes b LEFT JOIN users u ON u.id = b.owner_user_id
+    'SELECT b.*, p.name AS owner_name
+     FROM bikes b LEFT JOIN people p ON p.id = b.owner_person_id
      WHERE b.id = ?'
 );
 $stmt->execute([$bikeId]);
@@ -133,12 +133,13 @@ require __DIR__ . '/src/views/header.php';
     <h2>Ersatzteile</h2>
     <?php if ($parts): ?>
     <table class="data-table">
-        <thead><tr><th>Teil</th><th>Grund</th><th>Status</th><th>Priorität</th><th></th></tr></thead>
+        <thead><tr><th>Teil</th><th>Grund</th><th>Preis</th><th>Status</th><th>Priorität</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($parts as $p): ?>
             <tr class="<?= $p['status'] === 'installed' ? 'inactive' : '' ?>">
                 <td><?= htmlspecialchars($p['part_name']) ?><?= $p['component_name'] ? ' (' . htmlspecialchars($p['component_name']) . ')' : '' ?></td>
                 <td class="muted small"><?= htmlspecialchars($p['reason'] ?? '') ?></td>
+                <td><?= $p['price_chf'] !== null ? 'CHF ' . htmlspecialchars($p['price_chf']) : '' ?></td>
                 <td><span class="badge status-<?= htmlspecialchars($p['status']) ?>"><?= htmlspecialchars($p['status']) ?></span></td>
                 <td><span class="badge prio-<?= htmlspecialchars($p['priority']) ?>"><?= htmlspecialchars($p['priority']) ?></span></td>
                 <td><a href="/part_edit.php?id=<?= (int) $p['id'] ?>">bearbeiten</a></td>
