@@ -44,8 +44,10 @@ $components = $components->fetchAll();
 $validComponentIds = array_column($components, 'id');
 
 $catalogStmt = $pdo->prepare(
-    'SELECT id, name, manufacturer, stock_qty FROM parts_catalog
-     WHERE for_bike_id IS NULL OR for_bike_id = ? ORDER BY manufacturer, name'
+    'SELECT id, name, manufacturer, stock_qty FROM parts_catalog c
+     WHERE NOT EXISTS (SELECT 1 FROM parts_catalog_bikes pcb WHERE pcb.catalog_item_id = c.id)
+        OR EXISTS (SELECT 1 FROM parts_catalog_bikes pcb WHERE pcb.catalog_item_id = c.id AND pcb.bike_id = ?)
+     ORDER BY manufacturer, name'
 );
 $catalogStmt->execute([$bikeId]);
 $catalogItems = $catalogStmt->fetchAll();

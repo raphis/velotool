@@ -86,13 +86,22 @@ CREATE TABLE IF NOT EXISTS parts_catalog (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     manufacturer VARCHAR(150) NULL,
+    supplier VARCHAR(150) NULL COMMENT 'z.B. velofactory.ch',
     price_chf DECIMAL(6,2) NULL,
     note VARCHAR(255) NULL,
     stock_qty INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Wieviele Stueck aktuell zuhause auf Lager sind',
     stock_note VARCHAR(255) NULL COMMENT 'z.B. "1x reserviert fuers Radon"',
-    for_bike_id INT UNSIGNED NULL COMMENT 'Passt nur zu einem bestimmten Velo (z.B. Bremsbelag-Modell), sonst NULL = universell',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_catalog_bike FOREIGN KEY (for_bike_id) REFERENCES bikes(id) ON DELETE SET NULL
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Zu welchen Velos ein Katalog-Teil passt (z.B. ein Sattel kann zu mehreren
+-- Velos passen). Keine Zeilen fuer ein Teil = universell/passt zu allen.
+CREATE TABLE IF NOT EXISTS parts_catalog_bikes (
+    catalog_item_id INT UNSIGNED NOT NULL,
+    bike_id INT UNSIGNED NOT NULL,
+    PRIMARY KEY (catalog_item_id, bike_id),
+    CONSTRAINT fk_pcb_catalog FOREIGN KEY (catalog_item_id) REFERENCES parts_catalog(id) ON DELETE CASCADE,
+    CONSTRAINT fk_pcb_bike FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Welche Katalog-Teile (aus dem Lager) bei einem Wartungseintrag verbraucht wurden.

@@ -5,8 +5,9 @@ Auth::requireLogin();
 $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 
-$item = ['name' => '', 'manufacturer' => '', 'price_chf' => '', 'note' => '', 'stock_qty' => 0,
-    'stock_note' => '', 'for_bike_id' => ''];
+$item = ['name' => '', 'manufacturer' => '', 'supplier' => '', 'price_chf' => '', 'note' => '', 'stock_qty' => 0,
+    'stock_note' => ''];
+$selectedBikeIds = [];
 
 if ($id) {
     $stmt = $pdo->prepare('SELECT * FROM parts_catalog WHERE id = ?');
@@ -14,24 +15,32 @@ if ($id) {
     $found = $stmt->fetch();
     if ($found) {
         $item = $found;
+
+        $stmt = $pdo->prepare('SELECT bike_id FROM parts_catalog_bikes WHERE catalog_item_id = ?');
+        $stmt->execute([$id]);
+        $selectedBikeIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
     }
 }
 
 $bikes = $pdo->query('SELECT id, name FROM bikes ORDER BY name')->fetchAll();
+$validBikeIds = array_column($bikes, 'id');
 
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
 
+    $postedBikeIds = array_map('intval', $_POST['bike_ids'] ?? []);
+    $selectedBikeIds = array_values(array_intersect($postedBikeIds, $validBikeIds));
+
     $data = [
         'name' => trim($_POST['name'] ?? ''),
         'manufacturer' => trim($_POST['manufacturer'] ?? '') ?: null,
+        'supplier' => trim($_POST['supplier'] ?? '') ?: null,
         'price_chf' => $_POST['price_chf'] !== '' ? $_POST['price_chf'] : null,
         'note' => trim($_POST['note'] ?? '') ?: null,
         'stock_qty' => $_POST['stock_qty'] !== '' ? (int) $_POST['stock_qty'] : 0,
         'stock_note' => trim($_POST['stock_note'] ?? '') ?: null,
-        'for_bike_id' => $_POST['for_bike_id'] !== '' ? (int) $_POST['for_bike_id'] : null,
     ];
 
     if ($data['name'] === '') {
@@ -40,12 +49,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         if ($id) {
-            $pdo->prepare('UPDATE parts_catalog SET name=?, manufacturer=?, price_chf=?, note=?, stock_qty=?, stock_note=?, for_bike_id=? WHERE id=?')
+            $pdo->prepare('UPDATE parts_catalog SET name=?, manufacturer=?, supplier=?, price_chf=?, note=?, stock_qty=?, stock_note=? WHERE id=?')
                 ->execute([...array_values($data), $id]);
         } else {
-            $pdo->prepare('INSERT INTO parts_catalog (name, manufacturer, price_chf, note, stock_qty, stock_note, for_bike_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
+            $pdo->prepare('INSERT INTO parts_catalog (name, manufacturer, supplier, price_chf, note, stock_qty, stock_note) VALUES (?, ?, ?, ?, ?, ?, ?)')
                 ->execute(array_values($data));
+            $id = (int) $pdo->lastInsertId();
         }
+
+        $pdo->prepare('DELETE FROM parts_catalog_bikes WHERE catalog_item_id = ?')->execute([$id]);
+        if ($selectedBikeIds) {
+            $ins = $pdo->prepare('INSERT INTO parts_catalog_bikes (catalog_item_id, bike_id) VALUES (?, ?)');
+            foreach ($selectedBikeIds as $bikeId) {
+                $ins->execute([$id, $bikeId]);
+            }
+        }
+
         header('Location: /catalog.php');
         exit;
     }
@@ -64,13 +83,20 @@ require __DIR__ . '/src/views/header.php';
 
     <label>Name*<input type="text" name="name" value="<?= htmlspecialchars($item['name']) ?>" required></label>
     <label>Hersteller<input type="text" name="manufacturer" value="<?= htmlspecialchars($item['manufacturer'] ?? '') ?>"></label>
+    <label>Lieferant<input type="text" name="supplier" value="<?= htmlspecialchars($item['supplier'] ?? '') ?>" placeholder="z.B. velofactory.ch"></label>
     <label>Preis (CHF)<input type="number" step="0.01" name="price_chf" value="<?= htmlspecialchars((string) ($item['price_chf'] ?? '')) ?>"></label>
-    <label>Für Velo<select name="for_bike_id">
-        <option value="">– universell / alle –</option>
-        <?php foreach ($bikes as $b): ?>
-        <option value="<?= (int) $b['id'] ?>" <?= (int) ($item['for_bike_id'] ?? 0) === (int) $b['id'] ? 'selected' : '' ?>><?= htmlspecialchars($b['name']) ?></option>
-        <?php endforeach; ?>
-    </select></label>
+
+    <fieldset class="full component-picker">
+        <legend>Passt zu diesen Velos (keine Auswahl = universell/alle)</legend>
+        <?php if ($bikes): ?>
+            <?php foreach ($bikes as $b): ?>
+            <label class="checkbox"><input type="checkbox" name="bike_ids[]" value="<?= (int) $b['id'] ?>" <?= in_array((int) $b['id'], $selectedBikeIds, true) ? 'checked' : '' ?>> <?= htmlspecialchars($b['name']) ?></label>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p class="muted">Noch keine Velos erfasst.</p>
+        <?php endif; ?>
+    </fieldset>
+
     <label class="full">Notiz<input type="text" name="note" value="<?= htmlspecialchars($item['note'] ?? '') ?>"></label>
     <label>Auf Lager (Stück)<input type="number" step="1" min="0" name="stock_qty" value="<?= htmlspecialchars((string) $item['stock_qty']) ?>"></label>
     <label>Lager-Notiz<input type="text" name="stock_note" value="<?= htmlspecialchars($item['stock_note'] ?? '') ?>" placeholder="z.B. reserviert fürs Radon"></label>

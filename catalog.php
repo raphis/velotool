@@ -4,9 +4,12 @@ Auth::requireLogin();
 
 $pdo = Database::get();
 $items = $pdo->query(
-    'SELECT c.*, b.name AS bike_name
-     FROM parts_catalog c LEFT JOIN bikes b ON b.id = c.for_bike_id
-     ORDER BY c.manufacturer, c.name'
+    "SELECT c.*, GROUP_CONCAT(b.name ORDER BY b.name SEPARATOR ', ') AS bike_names
+     FROM parts_catalog c
+     LEFT JOIN parts_catalog_bikes pcb ON pcb.catalog_item_id = c.id
+     LEFT JOIN bikes b ON b.id = pcb.bike_id
+     GROUP BY c.id
+     ORDER BY c.manufacturer, c.name"
 )->fetchAll();
 
 $pageTitle = 'Ersatzteil-Katalog';
@@ -19,12 +22,13 @@ require __DIR__ . '/src/views/header.php';
 
 <?php if ($items): ?>
 <table class="data-table">
-    <thead><tr><th>Teil</th><th>Für Velo</th><th>Preis</th><th>Auf Lager</th><th></th></tr></thead>
+    <thead><tr><th>Teil</th><th>Für Velo</th><th>Lieferant</th><th>Preis</th><th>Auf Lager</th><th></th></tr></thead>
     <tbody>
     <?php foreach ($items as $i): ?>
         <tr>
             <td><?= htmlspecialchars(($i['manufacturer'] ? $i['manufacturer'] . ' – ' : '') . $i['name']) ?></td>
-            <td><?= $i['bike_name'] ? htmlspecialchars($i['bike_name']) : '<span class="muted small">universell</span>' ?></td>
+            <td><?= $i['bike_names'] ? htmlspecialchars($i['bike_names']) : '<span class="muted small">universell</span>' ?></td>
+            <td><?= $i['supplier'] ? htmlspecialchars($i['supplier']) : '' ?></td>
             <td><?= $i['price_chf'] !== null ? 'CHF ' . htmlspecialchars($i['price_chf']) : '' ?></td>
             <td>
                 <?php if ((int) $i['stock_qty'] > 0): ?>
