@@ -52,6 +52,15 @@ $parts = $pdo->prepare(
 $parts->execute([$bikeId]);
 $parts = $parts->fetchAll();
 
+$catalogStock = $pdo->prepare(
+    "SELECT c.* FROM parts_catalog c
+     WHERE NOT EXISTS (SELECT 1 FROM parts_catalog_bikes pcb WHERE pcb.catalog_item_id = c.id)
+        OR EXISTS (SELECT 1 FROM parts_catalog_bikes pcb WHERE pcb.catalog_item_id = c.id AND pcb.bike_id = ?)
+     ORDER BY (stock_qty = 0), manufacturer, name"
+);
+$catalogStock->execute([$bikeId]);
+$catalogStock = $catalogStock->fetchAll();
+
 $pageTitle = $bike['name'];
 require __DIR__ . '/src/views/header.php';
 ?>
@@ -135,6 +144,35 @@ require __DIR__ . '/src/views/header.php';
     </table>
     <?php else: ?>
         <p class="muted">Noch keine Wartungseinträge.</p>
+    <?php endif; ?>
+</section>
+
+<section class="panel">
+    <h2>Lagerbestand (passende Ersatzteile)</h2>
+    <?php if ($catalogStock): ?>
+    <table class="data-table">
+        <thead><tr><th>Teil</th><th>Lieferant</th><th>Preis</th><th>Auf Lager</th><th></th></tr></thead>
+        <tbody>
+        <?php foreach ($catalogStock as $c): ?>
+            <tr class="<?= (int) $c['stock_qty'] === 0 ? 'inactive' : '' ?>">
+                <td><?= htmlspecialchars(($c['manufacturer'] ? $c['manufacturer'] . ' – ' : '') . $c['name']) ?></td>
+                <td><?= $c['supplier'] ? htmlspecialchars($c['supplier']) : '' ?></td>
+                <td><?= $c['price_chf'] !== null ? 'CHF ' . htmlspecialchars($c['price_chf']) : '' ?></td>
+                <td>
+                    <?php if ((int) $c['stock_qty'] > 0): ?>
+                    <span class="badge status-installed"><?= (int) $c['stock_qty'] ?>x</span>
+                    <?php else: ?>
+                    <span class="muted small">–</span>
+                    <?php endif; ?>
+                    <?php if ($c['stock_note']): ?><span class="muted small"><?= htmlspecialchars($c['stock_note']) ?></span><?php endif; ?>
+                </td>
+                <td><a href="/catalog_edit.php?id=<?= (int) $c['id'] ?>">bearbeiten</a></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php else: ?>
+        <p class="muted">Keine passenden Katalog-Teile erfasst. <a href="/catalog.php">Katalog verwalten</a></p>
     <?php endif; ?>
 </section>
 
