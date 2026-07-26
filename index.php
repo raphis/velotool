@@ -24,10 +24,6 @@ $bikes = $pdo->query(
      ORDER BY b.is_active DESC, b.name'
 )->fetchAll();
 
-$openPartsCount = (int) $pdo->query(
-    "SELECT COUNT(*) FROM parts_needed WHERE status != 'installed'"
-)->fetchColumn();
-
 $pageTitle = 'Velos';
 require __DIR__ . '/src/views/header.php';
 ?>
@@ -35,10 +31,6 @@ require __DIR__ . '/src/views/header.php';
     <h1>Velos</h1>
     <a class="button" href="/bike_edit.php">+ Neues Velo</a>
 </div>
-
-<?php if ($openPartsCount > 0): ?>
-<p class="notice"><a href="/parts.php">📦 <?= $openPartsCount ?> offene Ersatzteil-Position<?= $openPartsCount === 1 ? '' : 'en' ?></a></p>
-<?php endif; ?>
 
 <div class="card-grid">
 <?php foreach ($bikes as $bike): ?>

@@ -30,6 +30,12 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
 
+    if (isset($_POST['delete']) && $id) {
+        $pdo->prepare('DELETE FROM parts_catalog WHERE id = ?')->execute([$id]);
+        header('Location: /catalog.php');
+        exit;
+    }
+
     $postedBikeIds = array_map('intval', $_POST['bike_ids'] ?? []);
     $selectedBikeIds = array_values(array_intersect($postedBikeIds, $validBikeIds));
 
@@ -106,4 +112,13 @@ require __DIR__ . '/src/views/header.php';
         <a class="button secondary" href="/catalog.php">Abbrechen</a>
     </div>
 </form>
+
+<?php if ($id): ?>
+<form method="post" class="form" onsubmit="return confirm('Katalog-Teil wirklich löschen? Verknüpfte Wartungseinträge verlieren nur den Bezug dazu, werden aber nicht gelöscht.');" style="margin-top: 1rem;">
+    <?= csrf_field() ?>
+    <input type="hidden" name="id" value="<?= (int) $id ?>">
+    <input type="hidden" name="delete" value="1">
+    <button type="submit" class="button secondary" style="color:#b3261e; border-color:#b3261e;">Katalog-Teil löschen</button>
+</form>
+<?php endif; ?>
 <?php require __DIR__ . '/src/views/footer.php'; ?>

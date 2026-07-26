@@ -44,14 +44,6 @@ $logs = $pdo->prepare(
 $logs->execute([$bikeId]);
 $logs = $logs->fetchAll();
 
-$parts = $pdo->prepare(
-    "SELECT p.*, c.name AS component_name FROM parts_needed p
-     LEFT JOIN components c ON c.id = p.component_id
-     WHERE p.bike_id = ? ORDER BY (p.status = 'installed'), p.priority = 'high' DESC, p.created_at DESC"
-);
-$parts->execute([$bikeId]);
-$parts = $parts->fetchAll();
-
 $catalogStock = $pdo->prepare(
     "SELECT c.* FROM parts_catalog c
      WHERE NOT EXISTS (SELECT 1 FROM parts_catalog_bikes pcb WHERE pcb.catalog_item_id = c.id)
@@ -73,7 +65,6 @@ require __DIR__ . '/src/views/header.php';
         <a class="button secondary" href="/bike_edit.php?id=<?= (int) $bike['id'] ?>">Bearbeiten</a>
         <a class="button secondary" href="/component_edit.php?bike_id=<?= (int) $bike['id'] ?>">+ Komponente</a>
         <a class="button secondary" href="/maintenance_edit.php?bike_id=<?= (int) $bike['id'] ?>">+ Wartungseintrag</a>
-        <a class="button secondary" href="/part_edit.php?bike_id=<?= (int) $bike['id'] ?>">+ Ersatzteil</a>
     </div>
 </div>
 
@@ -173,29 +164,6 @@ require __DIR__ . '/src/views/header.php';
     </table>
     <?php else: ?>
         <p class="muted">Keine passenden Katalog-Teile erfasst. <a href="/catalog.php">Katalog verwalten</a></p>
-    <?php endif; ?>
-</section>
-
-<section class="panel">
-    <h2>Ersatzteile</h2>
-    <?php if ($parts): ?>
-    <table class="data-table">
-        <thead><tr><th>Teil</th><th>Grund</th><th>Preis</th><th>Status</th><th>Priorität</th><th></th></tr></thead>
-        <tbody>
-        <?php foreach ($parts as $p): ?>
-            <tr class="<?= $p['status'] === 'installed' ? 'inactive' : '' ?>">
-                <td><?= htmlspecialchars($p['part_name']) ?><?= $p['component_name'] ? ' (' . htmlspecialchars($p['component_name']) . ')' : '' ?></td>
-                <td class="muted small"><?= htmlspecialchars($p['reason'] ?? '') ?></td>
-                <td><?= $p['price_chf'] !== null ? 'CHF ' . htmlspecialchars($p['price_chf']) : '' ?></td>
-                <td><span class="badge status-<?= htmlspecialchars($p['status']) ?>"><?= htmlspecialchars($p['status']) ?></span></td>
-                <td><span class="badge prio-<?= htmlspecialchars($p['priority']) ?>"><?= htmlspecialchars($p['priority']) ?></span></td>
-                <td><a href="/part_edit.php?id=<?= (int) $p['id'] ?>">bearbeiten</a></td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-    <?php else: ?>
-        <p class="muted">Keine offenen Ersatzteile.</p>
     <?php endif; ?>
 </section>
 
