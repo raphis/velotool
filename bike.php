@@ -29,10 +29,14 @@ $components->execute([$bikeId]);
 $components = $components->fetchAll();
 
 $logs = $pdo->prepare(
-    "SELECT l.*, GROUP_CONCAT(c.category, ' – ', c.name ORDER BY c.category SEPARATOR ', ') AS component_names
+    "SELECT l.*,
+        GROUP_CONCAT(DISTINCT c.category, ' – ', c.name ORDER BY c.category SEPARATOR ', ') AS component_names,
+        GROUP_CONCAT(DISTINCT pc.name, ' (', mlp.quantity, 'x)' ORDER BY pc.name SEPARATOR ', ') AS parts_used_names
      FROM maintenance_logs l
      LEFT JOIN maintenance_log_components mlc ON mlc.log_id = l.id
      LEFT JOIN components c ON c.id = mlc.component_id
+     LEFT JOIN maintenance_log_parts mlp ON mlp.log_id = l.id
+     LEFT JOIN parts_catalog pc ON pc.id = mlp.catalog_item_id
      WHERE l.bike_id = ?
      GROUP BY l.id
      ORDER BY l.log_date DESC, l.id DESC"
@@ -104,7 +108,7 @@ require __DIR__ . '/src/views/header.php';
     <h2>Wartungshistorie</h2>
     <?php if ($logs): ?>
     <table class="data-table">
-        <thead><tr><th>Datum</th><th>Kategorie</th><th>Beschreibung</th><th>km</th><th>Kosten</th><th>Messwerte</th><th></th></tr></thead>
+        <thead><tr><th>Datum</th><th>Kategorie</th><th>Beschreibung</th><th>km</th><th>Kosten</th><th>Verwendete Teile</th><th>Messwerte</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($logs as $l): ?>
             <?php
@@ -122,6 +126,7 @@ require __DIR__ . '/src/views/header.php';
                 <td><?= nl2br(htmlspecialchars($l['description'])) ?></td>
                 <td><?= $l['mileage_km'] !== null ? (int) $l['mileage_km'] : '' ?></td>
                 <td><?= $l['cost'] !== null ? 'CHF ' . htmlspecialchars($l['cost']) : '' ?></td>
+                <td class="muted small"><?= $l['parts_used_names'] ? htmlspecialchars($l['parts_used_names']) : '' ?></td>
                 <td class="muted small"><?= $measurements ? implode('<br>', $measurements) : '' ?></td>
                 <td><a href="/maintenance_edit.php?id=<?= (int) $l['id'] ?>">bearbeiten</a></td>
             </tr>

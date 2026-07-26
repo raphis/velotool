@@ -11,6 +11,7 @@ $log = ['log_date' => date('Y-m-d'), 'category' => '', 'description' => '',
     'disc_thickness_front_mm' => '', 'disc_thickness_rear_mm' => '', 'pad_condition_front_percent' => '',
     'pad_condition_rear_percent' => '', 'other_measurements' => ''];
 $selectedComponentIds = [];
+$usedParts = [];
 
 if ($id) {
     $stmt = $pdo->prepare('SELECT * FROM maintenance_logs WHERE id = ?');
@@ -23,6 +24,12 @@ if ($id) {
         $stmt = $pdo->prepare('SELECT component_id FROM maintenance_log_components WHERE log_id = ?');
         $stmt->execute([$id]);
         $selectedComponentIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+
+        $stmt = $pdo->prepare('SELECT catalog_item_id, quantity FROM maintenance_log_parts WHERE log_id = ?');
+        $stmt->execute([$id]);
+        foreach ($stmt->fetchAll() as $row) {
+            $usedParts[(int) $row['catalog_item_id']] = (int) $row['quantity'];
+        }
     }
 }
 
@@ -36,6 +43,9 @@ $components->execute([$bikeId]);
 $components = $components->fetchAll();
 $validComponentIds = array_column($components, 'id');
 
+$catalogItems = $pdo->query('SELECT id, name, manufacturer, stock_qty FROM parts_catalog ORDER BY manufacturer, name')->fetchAll();
+$validCatalogIds = array_column($catalogItems, 'id');
+
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -43,6 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $postedComponentIds = array_map('intval', $_POST['component_ids'] ?? []);
     $selectedComponentIds = array_values(array_intersect($postedComponentIds, $validComponentIds));
+
+    $newUsedParts = [];
+    foreach ($_POST['parts_used'] ?? [] as $catalogId => $qty) {
+        $catalogId = (int) $catalogId;
+        $qty = (int) $qty;
+        if ($qty > 0 && in_array($catalogId, $validCatalogIds, true)) {
+            $newUsedParts[$catalogId] = $qty;
+        }
+    }
 
     $data = [
         'log_date' => $_POST['log_date'] ?: date('Y-m-d'),
@@ -85,6 +104,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Lagerbestand anpassen: alte Verbrauchsmenge zurückbuchen, neue abziehen (nie unter 0).
+        $oldUsedStmt = $pdo->prepare('SELECT catalog_item_id, quantity FROM maintenance_log_parts WHERE log_id = ?');
+        $oldUsedStmt->execute([$id]);
+        $oldUsedParts = [];
+        foreach ($oldUsedStmt->fetchAll() as $row) {
+            $oldUsedParts[(int) $row['catalog_item_id']] = (int) $row['quantity'];
+        }
+
+        $touchedCatalogIds = array_unique(array_merge(array_keys($oldUsedParts), array_keys($newUsedParts)));
+        $stockUpd = $pdo->prepare('UPDATE parts_catalog SET stock_qty = GREATEST(0, stock_qty + ? - ?) WHERE id = ?');
+        foreach ($touchedCatalogIds as $catalogId) {
+            $oldQty = $oldUsedParts[$catalogId] ?? 0;
+            $newQty = $newUsedParts[$catalogId] ?? 0;
+            if ($oldQty !== $newQty) {
+                $stockUpd->execute([$oldQty, $newQty, $catalogId]);
+            }
+        }
+
+        $pdo->prepare('DELETE FROM maintenance_log_parts WHERE log_id = ?')->execute([$id]);
+        if ($newUsedParts) {
+            $insUsed = $pdo->prepare('INSERT INTO maintenance_log_parts (log_id, catalog_item_id, quantity) VALUES (?, ?, ?)');
+            foreach ($newUsedParts as $catalogId => $qty) {
+                $insUsed->execute([$id, $catalogId, $qty]);
+            }
+        }
+
         header('Location: /bike.php?id=' . $bikeId);
         exit;
     }
@@ -113,6 +158,20 @@ require __DIR__ . '/src/views/header.php';
             <?php endforeach; ?>
         <?php else: ?>
             <p class="muted">Noch keine Komponenten für dieses Velo erfasst.</p>
+        <?php endif; ?>
+    </fieldset>
+
+    <fieldset class="full component-picker">
+        <legend>Verwendete Ersatzteile (aus Lager)</legend>
+        <?php if ($catalogItems): ?>
+            <?php foreach ($catalogItems as $c): ?>
+            <label class="parts-used-row">
+                <input type="number" min="0" step="1" name="parts_used[<?= (int) $c['id'] ?>]" value="<?= (int) ($usedParts[$c['id']] ?? 0) ?>">
+                <span><?= htmlspecialchars(($c['manufacturer'] ? $c['manufacturer'] . ' – ' : '') . $c['name']) ?> <span class="muted small">(Lager: <?= (int) $c['stock_qty'] ?>x)</span></span>
+            </label>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p class="muted">Noch keine Katalog-Teile erfasst. <a href="/catalog.php">Katalog verwalten</a></p>
         <?php endif; ?>
     </fieldset>
 

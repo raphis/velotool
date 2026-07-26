@@ -93,6 +93,16 @@ CREATE TABLE IF NOT EXISTS parts_catalog (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Welche Katalog-Teile (aus dem Lager) bei einem Wartungseintrag verbraucht wurden.
+CREATE TABLE IF NOT EXISTS maintenance_log_parts (
+    log_id INT UNSIGNED NOT NULL,
+    catalog_item_id INT UNSIGNED NOT NULL,
+    quantity INT UNSIGNED NOT NULL DEFAULT 1,
+    PRIMARY KEY (log_id, catalog_item_id),
+    CONSTRAINT fk_mlp_log FOREIGN KEY (log_id) REFERENCES maintenance_logs(id) ON DELETE CASCADE,
+    CONSTRAINT fk_mlp_catalog FOREIGN KEY (catalog_item_id) REFERENCES parts_catalog(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS parts_needed (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     bike_id INT UNSIGNED NOT NULL,
