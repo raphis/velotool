@@ -108,7 +108,7 @@ require __DIR__ . '/src/views/header.php';
     <h2>Wartungshistorie</h2>
     <?php if ($logs): ?>
     <table class="data-table">
-        <thead><tr><th>Datum</th><th>Kategorie</th><th>Beschreibung</th><th>km</th><th>Kosten</th><th>Verwendete Teile</th><th>Messwerte</th><th></th></tr></thead>
+        <thead><tr><th>Datum</th><th>km</th><th>Kategorie</th><th>Beschreibung</th><th>Kosten</th><th>Verwendete Teile</th><th>Messwerte</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($logs as $l): ?>
             <?php
@@ -122,9 +122,9 @@ require __DIR__ . '/src/views/header.php';
             ?>
             <tr>
                 <td><?= htmlspecialchars($l['log_date']) ?></td>
+                <td><?= $l['mileage_km'] !== null ? (int) $l['mileage_km'] : '' ?></td>
                 <td><?= htmlspecialchars($l['category']) ?><?= $l['component_names'] ? ' (' . htmlspecialchars($l['component_names']) . ')' : '' ?></td>
                 <td><?= nl2br(htmlspecialchars($l['description'])) ?></td>
-                <td><?= $l['mileage_km'] !== null ? (int) $l['mileage_km'] : '' ?></td>
                 <td><?= $l['cost'] !== null ? 'CHF ' . htmlspecialchars($l['cost']) : '' ?></td>
                 <td class="muted small"><?= $l['parts_used_names'] ? htmlspecialchars($l['parts_used_names']) : '' ?></td>
                 <td class="muted small"><?= $measurements ? implode('<br>', $measurements) : '' ?></td>
