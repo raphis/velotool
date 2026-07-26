@@ -1,5 +1,5 @@
 -- Seed: Radon Relate 8.0 Lady 625
-INSERT INTO bikes (name, brand, model, model_year, frame_size, color, serial_number, notes)
+INSERT INTO bikes (name, brand, model, model_year, frame_size, color, frame_number, notes)
 VALUES (
     'Radon Relate 8.0 Lady',
     'Radon',

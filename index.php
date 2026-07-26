@@ -46,7 +46,7 @@ require __DIR__ . '/src/views/header.php';
         <h2><?= htmlspecialchars($bike['name']) ?></h2>
         <p class="muted"><?= htmlspecialchars(trim($bike['brand'] . ' ' . $bike['model'])) ?></p>
         <?php if ($bike['owner_name']): ?><p class="owner">👤 <?= htmlspecialchars($bike['owner_name']) ?></p><?php endif; ?>
-        <?php if ($bike['serial_number']): ?><p class="muted small">SN: <?= htmlspecialchars($bike['serial_number']) ?></p><?php endif; ?>
+        <?php if ($bike['frame_number']): ?><p class="muted small">Rahmen-Nr.: <?= htmlspecialchars($bike['frame_number']) ?></p><?php endif; ?>
     </a>
 <?php endforeach; ?>
 <?php if (!$bikes): ?>

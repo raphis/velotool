@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS bikes (
     model_year SMALLINT NULL,
     frame_size VARCHAR(50) NULL,
     color VARCHAR(100) NULL,
-    serial_number VARCHAR(100) NULL,
+    frame_number VARCHAR(100) NULL COMMENT 'Rahmennummer',
     purchase_date DATE NULL,
     purchase_price DECIMAL(10,2) NULL,
     weight_kg DECIMAL(5,2) NULL,

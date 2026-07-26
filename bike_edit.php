@@ -5,7 +5,7 @@ Auth::requireLogin();
 $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $bike = ['name' => '', 'brand' => '', 'model' => '', 'model_year' => '', 'frame_size' => '', 'color' => '',
-    'serial_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'weight_kg' => '', 'notes' => '',
+    'frame_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'weight_kg' => '', 'notes' => '',
     'owner_person_id' => '', 'is_active' => 1];
 
 if ($id) {
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'model_year' => $_POST['model_year'] !== '' ? (int) $_POST['model_year'] : null,
         'frame_size' => trim($_POST['frame_size'] ?? '') ?: null,
         'color' => trim($_POST['color'] ?? '') ?: null,
-        'serial_number' => trim($_POST['serial_number'] ?? '') ?: null,
+        'frame_number' => trim($_POST['frame_number'] ?? '') ?: null,
         'purchase_date' => $_POST['purchase_date'] ?: null,
         'purchase_price' => $_POST['purchase_price'] !== '' ? $_POST['purchase_price'] : null,
         'weight_kg' => $_POST['weight_kg'] !== '' ? $_POST['weight_kg'] : null,
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         if ($id) {
-            $sql = 'UPDATE bikes SET name=?, brand=?, model=?, model_year=?, frame_size=?, color=?, serial_number=?,
+            $sql = 'UPDATE bikes SET name=?, brand=?, model=?, model_year=?, frame_size=?, color=?, frame_number=?,
                     purchase_date=?, purchase_price=?, weight_kg=?, notes=?, owner_person_id=?, is_active=? WHERE id=?';
             $pdo->prepare($sql)->execute([...array_values($data), $id]);
         } else {
@@ -78,7 +78,7 @@ require __DIR__ . '/src/views/header.php';
     <label>Modelljahr<input type="number" name="model_year" value="<?= htmlspecialchars((string) ($bike['model_year'] ?? '')) ?>"></label>
     <label>Rahmengrösse<input type="text" name="frame_size" value="<?= htmlspecialchars($bike['frame_size'] ?? '') ?>"></label>
     <label>Farbe<input type="text" name="color" value="<?= htmlspecialchars($bike['color'] ?? '') ?>"></label>
-    <label>Seriennummer<input type="text" name="serial_number" value="<?= htmlspecialchars($bike['serial_number'] ?? '') ?>"></label>
+    <label>Rahmennummer<input type="text" name="frame_number" value="<?= htmlspecialchars($bike['frame_number'] ?? '') ?>"></label>
     <label>Gehört<select name="owner_person_id">
         <option value="">–</option>
         <?php foreach ($people as $u): ?>
