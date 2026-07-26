@@ -90,7 +90,7 @@ a:hover { text-decoration: underline; }
 }
 .card:hover { border-color: var(--teal); text-decoration: none; }
 .card h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
-.card-photo { width: calc(100% + 2.5rem); max-width: none; margin: -1rem -1.25rem 0.75rem; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px 12px 0 0; display: block; }
+.card-photo { width: calc(100% + 2.5rem); max-width: none; margin: -1rem -1.25rem 0.75rem; aspect-ratio: 4 / 3; object-fit: contain; background: var(--border); border-radius: 12px 12px 0 0; display: block; }
 .card.inactive { opacity: 0.55; }
 .owner { margin: 0.4rem 0 0; }
 
@@ -183,7 +183,8 @@ a:hover { text-decoration: underline; }
 .photo-item img {
     width: 100%;
     aspect-ratio: 4 / 3;
-    object-fit: cover;
+    object-fit: contain;
+    background: var(--border);
     border-radius: 8px;
     border: 1px solid var(--border);
     display: block;
