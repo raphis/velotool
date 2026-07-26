@@ -32,4 +32,6 @@ INSERT INTO components (bike_id, category, name, manufacturer, details) VALUES
 (@bike_id, 'Gepäckträger', 'Nummernschild-Halterung',                   NULL,            'Art.-Nr. 43100812 (Kassenzettel 12.05.2015).'),
 (@bike_id, 'Rückspiegel',  'Rückspiegel',                                NULL,            'Art.-Nr. 122076919 (Kassenzettel 12.05.2015).'),
 (@bike_id, 'Schloss',      'Faltschloss FS 300/85, schwarz',            'Trelock',       'Art.-Nr. 122073520 (Kassenzettel 12.05.2015).'),
-(@bike_id, 'Sonstiges',    'PLET-15-Geni, 26"/28" (Bezeichnung laut Kassenzettel, nicht eindeutig zuordenbar)', 'Pletscher (vermutet)', 'Art.-Nr. 144099012, CHF 65.00 (Kassenzettel 12.05.2015). Genaue Funktion unklar, evtl. Gepäckträger-Zubehör -- bitte am Velo pruefen.');
+(@bike_id, 'Sonstiges',    'PLET-15-Geni, 26"/28" (Bezeichnung laut Kassenzettel, nicht eindeutig zuordenbar)', 'Pletscher (vermutet)', 'Art.-Nr. 144099012, CHF 65.00 (Kassenzettel 12.05.2015). Genaue Funktion unklar, evtl. Gepäckträger-Zubehör -- bitte am Velo pruefen.'),
+(@bike_id, 'Bremsscheiben', 'SM-RT70-M, 180mm, min. 1.5mm',              'Shimano',       'Vorne & hinten dieselbe Scheibe. Gemessen 26.07.2026: vorne 1.7mm, hinten 1.7mm.'),
+(@bike_id, 'Bremsen',      'BL-T6000',                                   'Shimano',       'Vorne & hinten.');
