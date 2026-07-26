@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= htmlspecialchars($pageTitle ?? 'Velotool') ?> – Velotool</title>
 <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/style.css?v=<?= @filemtime(__DIR__ . '/../../assets/style.css') ?: time() ?>">
 </head>
 <body>
 <header class="topbar">
