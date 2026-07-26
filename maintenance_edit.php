@@ -43,7 +43,12 @@ $components->execute([$bikeId]);
 $components = $components->fetchAll();
 $validComponentIds = array_column($components, 'id');
 
-$catalogItems = $pdo->query('SELECT id, name, manufacturer, stock_qty FROM parts_catalog ORDER BY manufacturer, name')->fetchAll();
+$catalogStmt = $pdo->prepare(
+    'SELECT id, name, manufacturer, stock_qty FROM parts_catalog
+     WHERE for_bike_id IS NULL OR for_bike_id = ? ORDER BY manufacturer, name'
+);
+$catalogStmt->execute([$bikeId]);
+$catalogItems = $catalogStmt->fetchAll();
 $validCatalogIds = array_column($catalogItems, 'id');
 
 $errors = [];

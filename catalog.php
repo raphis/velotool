@@ -3,7 +3,11 @@ require __DIR__ . '/src/bootstrap.php';
 Auth::requireLogin();
 
 $pdo = Database::get();
-$items = $pdo->query('SELECT * FROM parts_catalog ORDER BY manufacturer, name')->fetchAll();
+$items = $pdo->query(
+    'SELECT c.*, b.name AS bike_name
+     FROM parts_catalog c LEFT JOIN bikes b ON b.id = c.for_bike_id
+     ORDER BY c.manufacturer, c.name'
+)->fetchAll();
 
 $pageTitle = 'Ersatzteil-Katalog';
 require __DIR__ . '/src/views/header.php';
@@ -15,11 +19,12 @@ require __DIR__ . '/src/views/header.php';
 
 <?php if ($items): ?>
 <table class="data-table">
-    <thead><tr><th>Teil</th><th>Preis</th><th>Auf Lager</th><th></th></tr></thead>
+    <thead><tr><th>Teil</th><th>Für Velo</th><th>Preis</th><th>Auf Lager</th><th></th></tr></thead>
     <tbody>
     <?php foreach ($items as $i): ?>
         <tr>
             <td><?= htmlspecialchars(($i['manufacturer'] ? $i['manufacturer'] . ' – ' : '') . $i['name']) ?></td>
+            <td><?= $i['bike_name'] ? htmlspecialchars($i['bike_name']) : '<span class="muted small">universell</span>' ?></td>
             <td><?= $i['price_chf'] !== null ? 'CHF ' . htmlspecialchars($i['price_chf']) : '' ?></td>
             <td>
                 <?php if ((int) $i['stock_qty'] > 0): ?>

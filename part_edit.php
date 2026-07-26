@@ -28,7 +28,12 @@ $components = $pdo->prepare('SELECT id, name, category FROM components WHERE bik
 $components->execute([$bikeId]);
 $components = $components->fetchAll();
 
-$catalog = $pdo->query('SELECT id, name, manufacturer, price_chf, stock_qty, stock_note FROM parts_catalog ORDER BY manufacturer, name')->fetchAll();
+$catalogStmt = $pdo->prepare(
+    'SELECT id, name, manufacturer, price_chf, stock_qty, stock_note FROM parts_catalog
+     WHERE for_bike_id IS NULL OR for_bike_id = ? ORDER BY manufacturer, name'
+);
+$catalogStmt->execute([$bikeId]);
+$catalog = $catalogStmt->fetchAll();
 
 $errors = [];
 

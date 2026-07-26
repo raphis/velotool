@@ -90,7 +90,9 @@ CREATE TABLE IF NOT EXISTS parts_catalog (
     note VARCHAR(255) NULL,
     stock_qty INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Wieviele Stueck aktuell zuhause auf Lager sind',
     stock_note VARCHAR(255) NULL COMMENT 'z.B. "1x reserviert fuers Radon"',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    for_bike_id INT UNSIGNED NULL COMMENT 'Passt nur zu einem bestimmten Velo (z.B. Bremsbelag-Modell), sonst NULL = universell',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_catalog_bike FOREIGN KEY (for_bike_id) REFERENCES bikes(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Welche Katalog-Teile (aus dem Lager) bei einem Wartungseintrag verbraucht wurden.
