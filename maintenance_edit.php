@@ -7,7 +7,9 @@ $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $bikeId = (int) ($_GET['bike_id'] ?? $_POST['bike_id'] ?? 0);
 
 $log = ['log_date' => date('Y-m-d'), 'category' => '', 'description' => '', 'component_id' => '',
-    'mileage_km' => '', 'cost' => '', 'performed_by' => ''];
+    'mileage_km' => '', 'cost' => '', 'performed_by' => '', 'chain_wear_percent' => '',
+    'disc_thickness_front_mm' => '', 'disc_thickness_rear_mm' => '', 'pad_condition_front_percent' => '',
+    'pad_condition_rear_percent' => '', 'other_measurements' => ''];
 
 if ($id) {
     $stmt = $pdo->prepare('SELECT * FROM maintenance_logs WHERE id = ?');
@@ -41,6 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'mileage_km' => $_POST['mileage_km'] !== '' ? (int) $_POST['mileage_km'] : null,
         'cost' => $_POST['cost'] !== '' ? $_POST['cost'] : null,
         'performed_by' => trim($_POST['performed_by'] ?? '') ?: null,
+        'chain_wear_percent' => $_POST['chain_wear_percent'] !== '' ? $_POST['chain_wear_percent'] : null,
+        'disc_thickness_front_mm' => $_POST['disc_thickness_front_mm'] !== '' ? $_POST['disc_thickness_front_mm'] : null,
+        'disc_thickness_rear_mm' => $_POST['disc_thickness_rear_mm'] !== '' ? $_POST['disc_thickness_rear_mm'] : null,
+        'pad_condition_front_percent' => $_POST['pad_condition_front_percent'] !== '' ? (int) $_POST['pad_condition_front_percent'] : null,
+        'pad_condition_rear_percent' => $_POST['pad_condition_rear_percent'] !== '' ? (int) $_POST['pad_condition_rear_percent'] : null,
+        'other_measurements' => trim($_POST['other_measurements'] ?? '') ?: null,
     ];
 
     if ($data['category'] === '' || $data['description'] === '') {
@@ -49,10 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         if ($id) {
-            $pdo->prepare('UPDATE maintenance_logs SET log_date=?, category=?, description=?, component_id=?, mileage_km=?, cost=?, performed_by=? WHERE id=?')
+            $pdo->prepare('UPDATE maintenance_logs SET log_date=?, category=?, description=?, component_id=?, mileage_km=?, cost=?, performed_by=?,
+                    chain_wear_percent=?, disc_thickness_front_mm=?, disc_thickness_rear_mm=?, pad_condition_front_percent=?, pad_condition_rear_percent=?, other_measurements=?
+                    WHERE id=?')
                 ->execute([...array_values($data), $id]);
         } else {
-            $pdo->prepare('INSERT INTO maintenance_logs (bike_id, log_date, category, description, component_id, mileage_km, cost, performed_by, created_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+            $pdo->prepare('INSERT INTO maintenance_logs (bike_id, log_date, category, description, component_id, mileage_km, cost, performed_by,
+                    chain_wear_percent, disc_thickness_front_mm, disc_thickness_rear_mm, pad_condition_front_percent, pad_condition_rear_percent, other_measurements, created_by_user_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
                 ->execute([$bikeId, ...array_values($data), Auth::userId()]);
         }
         header('Location: /bike.php?id=' . $bikeId);
@@ -84,6 +96,13 @@ require __DIR__ . '/src/views/header.php';
     <label>Kilometerstand<input type="number" name="mileage_km" value="<?= htmlspecialchars((string) ($log['mileage_km'] ?? '')) ?>"></label>
     <label>Kosten (CHF)<input type="number" step="0.01" name="cost" value="<?= htmlspecialchars((string) ($log['cost'] ?? '')) ?>"></label>
     <label>Ausgeführt von<input type="text" name="performed_by" value="<?= htmlspecialchars($log['performed_by'] ?? '') ?>" placeholder="z.B. Velowerkstatt Muster, selbst"></label>
+
+    <label>Kettenverschleiss (%)<input type="number" step="0.01" min="0" name="chain_wear_percent" value="<?= htmlspecialchars((string) ($log['chain_wear_percent'] ?? '')) ?>" placeholder="z.B. 0.5 / 0.75 / 1.0"></label>
+    <label>Bremsscheibe vorne (mm)<input type="number" step="0.01" min="0" name="disc_thickness_front_mm" value="<?= htmlspecialchars((string) ($log['disc_thickness_front_mm'] ?? '')) ?>"></label>
+    <label>Bremsscheibe hinten (mm)<input type="number" step="0.01" min="0" name="disc_thickness_rear_mm" value="<?= htmlspecialchars((string) ($log['disc_thickness_rear_mm'] ?? '')) ?>"></label>
+    <label>Bremsklötze vorne (% Restzustand)<input type="number" step="1" min="0" max="100" name="pad_condition_front_percent" value="<?= htmlspecialchars((string) ($log['pad_condition_front_percent'] ?? '')) ?>"></label>
+    <label>Bremsklötze hinten (% Restzustand)<input type="number" step="1" min="0" max="100" name="pad_condition_rear_percent" value="<?= htmlspecialchars((string) ($log['pad_condition_rear_percent'] ?? '')) ?>"></label>
+    <label class="full">Weitere Messwerte<input type="text" name="other_measurements" value="<?= htmlspecialchars($log['other_measurements'] ?? '') ?>" placeholder="z.B. Reifenprofil, Federgabel-SAG, ..."></label>
 
     <div class="form-actions">
         <button type="submit" class="button">Speichern</button>

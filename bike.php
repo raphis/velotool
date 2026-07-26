@@ -100,15 +100,25 @@ require __DIR__ . '/src/views/header.php';
     <h2>Wartungshistorie</h2>
     <?php if ($logs): ?>
     <table class="data-table">
-        <thead><tr><th>Datum</th><th>Kategorie</th><th>Beschreibung</th><th>km</th><th>Kosten</th><th></th></tr></thead>
+        <thead><tr><th>Datum</th><th>Kategorie</th><th>Beschreibung</th><th>km</th><th>Kosten</th><th>Messwerte</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($logs as $l): ?>
+            <?php
+            $measurements = [];
+            if ($l['chain_wear_percent'] !== null) $measurements[] = 'Kette ' . htmlspecialchars($l['chain_wear_percent']) . '%';
+            if ($l['disc_thickness_front_mm'] !== null) $measurements[] = 'Scheibe v. ' . htmlspecialchars($l['disc_thickness_front_mm']) . 'mm';
+            if ($l['disc_thickness_rear_mm'] !== null) $measurements[] = 'Scheibe h. ' . htmlspecialchars($l['disc_thickness_rear_mm']) . 'mm';
+            if ($l['pad_condition_front_percent'] !== null) $measurements[] = 'Klötze v. ' . (int) $l['pad_condition_front_percent'] . '%';
+            if ($l['pad_condition_rear_percent'] !== null) $measurements[] = 'Klötze h. ' . (int) $l['pad_condition_rear_percent'] . '%';
+            if ($l['other_measurements']) $measurements[] = htmlspecialchars($l['other_measurements']);
+            ?>
             <tr>
                 <td><?= htmlspecialchars($l['log_date']) ?></td>
                 <td><?= htmlspecialchars($l['category']) ?><?= $l['component_name'] ? ' (' . htmlspecialchars($l['component_name']) . ')' : '' ?></td>
                 <td><?= nl2br(htmlspecialchars($l['description'])) ?></td>
                 <td><?= $l['mileage_km'] !== null ? (int) $l['mileage_km'] : '' ?></td>
                 <td><?= $l['cost'] !== null ? 'CHF ' . htmlspecialchars($l['cost']) : '' ?></td>
+                <td class="muted small"><?= $measurements ? implode('<br>', $measurements) : '' ?></td>
                 <td><a href="/maintenance_edit.php?id=<?= (int) $l['id'] ?>">bearbeiten</a></td>
             </tr>
         <?php endforeach; ?>
