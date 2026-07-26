@@ -1,0 +1,17 @@
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(sql|md)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(sql|md)$">
+        Order deny,allow
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+Options -Indexes

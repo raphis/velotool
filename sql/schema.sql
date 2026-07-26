@@ -1,0 +1,78 @@
+-- Velotool DB schema
+-- Charset/collation chosen for umlaut support
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    google_sub VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    picture_url VARCHAR(500) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS bikes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    owner_user_id INT UNSIGNED NULL,
+    name VARCHAR(150) NOT NULL,
+    brand VARCHAR(100) NULL,
+    model VARCHAR(150) NULL,
+    model_year SMALLINT NULL,
+    frame_size VARCHAR(50) NULL,
+    color VARCHAR(100) NULL,
+    serial_number VARCHAR(100) NULL,
+    purchase_date DATE NULL,
+    purchase_price DECIMAL(10,2) NULL,
+    weight_kg DECIMAL(5,2) NULL,
+    notes TEXT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_bikes_owner FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS components (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    bike_id INT UNSIGNED NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    manufacturer VARCHAR(150) NULL,
+    details TEXT NULL,
+    installed_date DATE NULL,
+    removed_date DATE NULL,
+    is_current TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_components_bike FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS maintenance_logs (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    bike_id INT UNSIGNED NOT NULL,
+    component_id INT UNSIGNED NULL,
+    log_date DATE NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    mileage_km INT UNSIGNED NULL,
+    cost DECIMAL(10,2) NULL,
+    performed_by VARCHAR(150) NULL,
+    created_by_user_id INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_logs_bike FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_logs_component FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE SET NULL,
+    CONSTRAINT fk_logs_user FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS parts_needed (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    bike_id INT UNSIGNED NOT NULL,
+    component_id INT UNSIGNED NULL,
+    part_name VARCHAR(255) NOT NULL,
+    reason TEXT NULL,
+    status ENUM('needed','ordered','installed') NOT NULL DEFAULT 'needed',
+    priority ENUM('low','normal','high') NOT NULL DEFAULT 'normal',
+    ordered_date DATE NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_parts_bike FOREIGN KEY (bike_id) REFERENCES bikes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_parts_component FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

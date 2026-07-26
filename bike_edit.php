@@ -1,0 +1,99 @@
+<?php
+require __DIR__ . '/src/bootstrap.php';
+Auth::requireLogin();
+
+$pdo = Database::get();
+$id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
+$bike = ['name' => '', 'brand' => '', 'model' => '', 'model_year' => '', 'frame_size' => '', 'color' => '',
+    'serial_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'weight_kg' => '', 'notes' => '',
+    'owner_user_id' => '', 'is_active' => 1];
+
+if ($id) {
+    $stmt = $pdo->prepare('SELECT * FROM bikes WHERE id = ?');
+    $stmt->execute([$id]);
+    $found = $stmt->fetch();
+    if ($found) {
+        $bike = $found;
+    }
+}
+
+$users = $pdo->query('SELECT id, name FROM users ORDER BY name')->fetchAll();
+
+$errors = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
+
+    $data = [
+        'name' => trim($_POST['name'] ?? ''),
+        'brand' => trim($_POST['brand'] ?? '') ?: null,
+        'model' => trim($_POST['model'] ?? '') ?: null,
+        'model_year' => $_POST['model_year'] !== '' ? (int) $_POST['model_year'] : null,
+        'frame_size' => trim($_POST['frame_size'] ?? '') ?: null,
+        'color' => trim($_POST['color'] ?? '') ?: null,
+        'serial_number' => trim($_POST['serial_number'] ?? '') ?: null,
+        'purchase_date' => $_POST['purchase_date'] ?: null,
+        'purchase_price' => $_POST['purchase_price'] !== '' ? $_POST['purchase_price'] : null,
+        'weight_kg' => $_POST['weight_kg'] !== '' ? $_POST['weight_kg'] : null,
+        'notes' => trim($_POST['notes'] ?? '') ?: null,
+        'owner_user_id' => $_POST['owner_user_id'] !== '' ? (int) $_POST['owner_user_id'] : null,
+        'is_active' => isset($_POST['is_active']) ? 1 : 0,
+    ];
+
+    if ($data['name'] === '') {
+        $errors[] = 'Name ist erforderlich.';
+    }
+
+    if (!$errors) {
+        if ($id) {
+            $sql = 'UPDATE bikes SET name=?, brand=?, model=?, model_year=?, frame_size=?, color=?, serial_number=?,
+                    purchase_date=?, purchase_price=?, weight_kg=?, notes=?, owner_user_id=?, is_active=? WHERE id=?';
+            $pdo->prepare($sql)->execute([...array_values($data), $id]);
+        } else {
+            $cols = implode(',', array_keys($data));
+            $placeholders = implode(',', array_fill(0, count($data), '?'));
+            $pdo->prepare("INSERT INTO bikes ($cols) VALUES ($placeholders)")->execute(array_values($data));
+            $id = (int) $pdo->lastInsertId();
+        }
+        header('Location: /bike.php?id=' . $id);
+        exit;
+    }
+    $bike = array_merge($bike, $data);
+}
+
+$pageTitle = $id ? 'Velo bearbeiten' : 'Neues Velo';
+require __DIR__ . '/src/views/header.php';
+?>
+<h1><?= htmlspecialchars($pageTitle) ?></h1>
+
+<?php foreach ($errors as $e): ?><p class="error"><?= htmlspecialchars($e) ?></p><?php endforeach; ?>
+
+<form method="post" class="form">
+    <?= csrf_field() ?>
+    <input type="hidden" name="id" value="<?= (int) $id ?>">
+
+    <label>Name*<input type="text" name="name" value="<?= htmlspecialchars($bike['name']) ?>" required></label>
+    <label>Marke<input type="text" name="brand" value="<?= htmlspecialchars($bike['brand'] ?? '') ?>"></label>
+    <label>Modell<input type="text" name="model" value="<?= htmlspecialchars($bike['model'] ?? '') ?>"></label>
+    <label>Modelljahr<input type="number" name="model_year" value="<?= htmlspecialchars((string) ($bike['model_year'] ?? '')) ?>"></label>
+    <label>Rahmengrösse<input type="text" name="frame_size" value="<?= htmlspecialchars($bike['frame_size'] ?? '') ?>"></label>
+    <label>Farbe<input type="text" name="color" value="<?= htmlspecialchars($bike['color'] ?? '') ?>"></label>
+    <label>Seriennummer<input type="text" name="serial_number" value="<?= htmlspecialchars($bike['serial_number'] ?? '') ?>"></label>
+    <label>Gehört<select name="owner_user_id">
+        <option value="">–</option>
+        <?php foreach ($users as $u): ?>
+        <option value="<?= (int) $u['id'] ?>" <?= (int) ($bike['owner_user_id'] ?? 0) === (int) $u['id'] ? 'selected' : '' ?>><?= htmlspecialchars($u['name']) ?></option>
+        <?php endforeach; ?>
+    </select></label>
+    <label>Kaufdatum<input type="date" name="purchase_date" value="<?= htmlspecialchars($bike['purchase_date'] ?? '') ?>"></label>
+    <label>Kaufpreis (CHF)<input type="number" step="0.01" name="purchase_price" value="<?= htmlspecialchars((string) ($bike['purchase_price'] ?? '')) ?>"></label>
+    <label>Gewicht (kg)<input type="number" step="0.01" name="weight_kg" value="<?= htmlspecialchars((string) ($bike['weight_kg'] ?? '')) ?>"></label>
+    <label class="full">Notizen<textarea name="notes" rows="4"><?= htmlspecialchars($bike['notes'] ?? '') ?></textarea></label>
+    <label class="checkbox"><input type="checkbox" name="is_active" <?= $bike['is_active'] ? 'checked' : '' ?>> Aktiv im Einsatz</label>
+
+    <div class="form-actions">
+        <button type="submit" class="button">Speichern</button>
+        <?php if ($id): ?><a class="button secondary" href="/bike.php?id=<?= (int) $id ?>">Abbrechen</a><?php endif; ?>
+    </div>
+</form>
+<?php require __DIR__ . '/src/views/footer.php'; ?>

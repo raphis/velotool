@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f6f66"/>
+      <stop offset="100%" stop-color="#0a4a45"/>
+    </linearGradient>
+    <mask id="wrenchMask">
+      <rect x="0" y="0" width="200" height="200" fill="black"/>
+      <g fill="white">
+        <!-- handle -->
+        <rect x="86" y="70" width="28" height="98" rx="8"/>
+        <!-- top jaw block -->
+        <path d="M64 34
+                 a36 36 0 0 1 72 0
+                 a36 36 0 0 1 -18 31.2
+                 l0 22.8
+                 h-36
+                 l0 -22.8
+                 a36 36 0 0 1 -18 -31.2
+                 z"/>
+        <!-- bottom ring -->
+        <circle cx="100" cy="172" r="20"/>
+      </g>
+      <g fill="black">
+        <circle cx="100" cy="22" r="15"/>
+        <circle cx="72" cy="40" r="9"/>
+        <circle cx="128" cy="40" r="9"/>
+        <circle cx="100" cy="172" r="10"/>
+      </g>
+    </mask>
+  </defs>
+
+  <circle cx="100" cy="100" r="98" fill="url(#bg)"/>
+
+  <!-- wheel -->
+  <g stroke="#eef6f4" fill="none" stroke-width="5" opacity="0.9">
+    <circle cx="82" cy="122" r="52"/>
+    <circle cx="82" cy="122" r="6" fill="#eef6f4" stroke="none"/>
+    <line x1="82" y1="122" x2="82" y2="72"/>
+    <line x1="82" y1="122" x2="120" y2="94"/>
+    <line x1="82" y1="122" x2="132" y2="122"/>
+    <line x1="82" y1="122" x2="120" y2="150"/>
+    <line x1="82" y1="122" x2="82" y2="172"/>
+    <line x1="82" y1="122" x2="44" y2="150"/>
+    <line x1="82" y1="122" x2="32" y2="122"/>
+    <line x1="82" y1="122" x2="44" y2="94"/>
+  </g>
+
+  <!-- wrench emblem, rotated -->
+  <g transform="rotate(28 118 96)">
+    <rect x="0" y="0" width="200" height="200" fill="#f2994a" mask="url(#wrenchMask)" transform="translate(18 -34)"/>
+  </g>
+</svg>
