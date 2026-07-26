@@ -18,10 +18,14 @@ if (!Auth::isLoggedIn()) {
 
 $pdo = Database::get();
 $bikes = $pdo->query(
-    'SELECT b.*, p.name AS owner_name
+    "SELECT b.*, p.name AS owner_name,
+        GREATEST(b.updated_at, COALESCE(MAX(l.log_date), b.updated_at), COALESCE(MAX(l.created_at), b.updated_at), COALESCE(MAX(c.created_at), b.updated_at)) AS last_activity
      FROM bikes b
      LEFT JOIN people p ON p.id = b.owner_person_id
-     ORDER BY b.is_active DESC, b.name'
+     LEFT JOIN maintenance_logs l ON l.bike_id = b.id
+     LEFT JOIN components c ON c.bike_id = b.id
+     GROUP BY b.id
+     ORDER BY last_activity DESC"
 )->fetchAll();
 
 $pageTitle = 'Velos';
