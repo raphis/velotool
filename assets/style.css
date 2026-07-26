@@ -169,7 +169,7 @@ a:hover { text-decoration: underline; }
 }
 .component-picker legend { padding: 0 0.4rem; color: var(--muted); font-size: 0.85rem; }
 .component-picker label.checkbox { font-size: 0.95rem; color: var(--text); }
-.parts-used-row { flex-direction: row; align-items: center; gap: 0.6rem; font-size: 0.95rem; color: var(--text); }
+.form label.parts-used-row { flex-direction: row; align-items: center; gap: 0.6rem; font-size: 0.95rem; color: var(--text); }
 .parts-used-row input[type="number"] { width: 4.5rem; flex: none; }
 
 .error { color: #b3261e; }

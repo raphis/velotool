@@ -5,7 +5,7 @@ Auth::requireLogin();
 $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $bike = ['name' => '', 'brand' => '', 'model' => '', 'model_year' => '', 'frame_size' => '', 'color' => '',
-    'frame_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'purchase_price_currency' => 'CHF', 'weight_kg' => '', 'notes' => '',
+    'frame_number' => '', 'registration_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'purchase_price_currency' => 'CHF', 'weight_kg' => '', 'notes' => '',
     'owner_person_id' => '', 'is_active' => 1];
 
 if ($id) {
@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'frame_size' => trim($_POST['frame_size'] ?? '') ?: null,
         'color' => trim($_POST['color'] ?? '') ?: null,
         'frame_number' => trim($_POST['frame_number'] ?? '') ?: null,
+        'registration_number' => trim($_POST['registration_number'] ?? '') ?: null,
         'purchase_date' => $_POST['purchase_date'] ?: null,
         'purchase_price' => $_POST['purchase_price'] !== '' ? $_POST['purchase_price'] : null,
         'purchase_price_currency' => in_array($_POST['purchase_price_currency'] ?? '', ['CHF', 'EUR'], true) ? $_POST['purchase_price_currency'] : 'CHF',
@@ -47,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         if ($id) {
-            $sql = 'UPDATE bikes SET name=?, brand=?, model=?, model_year=?, frame_size=?, color=?, frame_number=?,
+            $sql = 'UPDATE bikes SET name=?, brand=?, model=?, model_year=?, frame_size=?, color=?, frame_number=?, registration_number=?,
                     purchase_date=?, purchase_price=?, purchase_price_currency=?, weight_kg=?, notes=?, owner_person_id=?, is_active=? WHERE id=?';
             $pdo->prepare($sql)->execute([...array_values($data), $id]);
         } else {
@@ -80,6 +81,7 @@ require __DIR__ . '/src/views/header.php';
     <label>Rahmengrösse<input type="text" name="frame_size" value="<?= htmlspecialchars($bike['frame_size'] ?? '') ?>"></label>
     <label>Farbe<input type="text" name="color" value="<?= htmlspecialchars($bike['color'] ?? '') ?>"></label>
     <label>Rahmennummer<input type="text" name="frame_number" value="<?= htmlspecialchars($bike['frame_number'] ?? '') ?>"></label>
+    <label>Kontrollschild-Nr. (Strassenverkehrsamt)<input type="text" name="registration_number" value="<?= htmlspecialchars($bike['registration_number'] ?? '') ?>" placeholder="bei S-Pedelec"></label>
     <label>Gehört<select name="owner_person_id">
         <option value="">–</option>
         <?php foreach ($people as $u): ?>

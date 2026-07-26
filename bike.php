@@ -73,6 +73,7 @@ require __DIR__ . '/src/views/header.php';
     <dl class="detail-grid">
         <?php if ($bike['owner_name']): ?><dt>Gehört</dt><dd><?= htmlspecialchars($bike['owner_name']) ?></dd><?php endif; ?>
         <?php if ($bike['frame_number']): ?><dt>Rahmennummer</dt><dd><?= htmlspecialchars($bike['frame_number']) ?></dd><?php endif; ?>
+        <?php if ($bike['registration_number']): ?><dt>Kontrollschild-Nr.</dt><dd><?= htmlspecialchars($bike['registration_number']) ?></dd><?php endif; ?>
         <?php if ($bike['frame_size']): ?><dt>Rahmengrösse</dt><dd><?= htmlspecialchars($bike['frame_size']) ?></dd><?php endif; ?>
         <?php if ($bike['color']): ?><dt>Farbe</dt><dd><?= htmlspecialchars($bike['color']) ?></dd><?php endif; ?>
         <?php if ($bike['purchase_date']): ?><dt>Kaufdatum</dt><dd><?= htmlspecialchars($bike['purchase_date']) ?></dd><?php endif; ?>

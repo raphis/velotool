@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS bikes (
     frame_size VARCHAR(50) NULL,
     color VARCHAR(100) NULL,
     frame_number VARCHAR(100) NULL COMMENT 'Rahmennummer',
+    registration_number VARCHAR(50) NULL COMMENT 'Kontrollschild-Nr. Strassenverkehrsamt (bei S-Pedelec)',
     purchase_date DATE NULL,
     purchase_price DECIMAL(10,2) NULL,
     purchase_price_currency ENUM('CHF','EUR') NOT NULL DEFAULT 'CHF',
