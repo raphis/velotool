@@ -21,7 +21,7 @@ if ($id) {
     }
 }
 
-$bikes = $pdo->query('SELECT id, name FROM bikes ORDER BY name')->fetchAll();
+$bikes = $pdo->query('SELECT id, name FROM bikes WHERE is_sold = 0 ORDER BY name')->fetchAll();
 $validBikeIds = array_column($bikes, 'id');
 
 $errors = [];

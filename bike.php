@@ -105,7 +105,7 @@ require __DIR__ . '/src/views/header.php';
 ?>
 <div class="page-header">
     <div>
-        <h1><?= htmlspecialchars($bike['name']) ?></h1>
+        <h1><?= htmlspecialchars($bike['name']) ?> <?php if ($bike['is_sold']): ?><span class="badge status-installed">verkauft</span><?php endif; ?></h1>
         <p class="muted"><?= htmlspecialchars(trim($bike['brand'] . ' ' . $bike['model'])) ?><?= $bike['model_year'] ? ' · ' . (int) $bike['model_year'] : '' ?></p>
     </div>
     <div class="actions">

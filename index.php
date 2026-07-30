@@ -29,6 +29,9 @@ $bikes = $pdo->query(
      ORDER BY last_activity DESC"
 )->fetchAll();
 
+$soldBikes = array_values(array_filter($bikes, fn ($b) => (int) $b['is_sold'] === 1));
+$bikes = array_values(array_filter($bikes, fn ($b) => (int) $b['is_sold'] === 0));
+
 $pageTitle = 'Velos';
 require __DIR__ . '/src/views/header.php';
 ?>
@@ -37,8 +40,9 @@ require __DIR__ . '/src/views/header.php';
     <a class="button" href="/bike_edit.php">+ Neues Velo</a>
 </div>
 
-<div class="card-grid">
-<?php foreach ($bikes as $bike): ?>
+<?php
+$renderBikeCard = function (array $bike): void {
+    ?>
     <a class="card bike-card<?= $bike['is_active'] ? '' : ' inactive' ?>" href="/bike.php?id=<?= (int) $bike['id'] ?>">
         <?php if ($bike['photo_filename']): ?><img class="card-photo" src="/uploads/bikes/<?= htmlspecialchars($bike['photo_filename']) ?>" alt=""><?php endif; ?>
         <h2><?= htmlspecialchars($bike['name']) ?></h2>
@@ -47,10 +51,28 @@ require __DIR__ . '/src/views/header.php';
         <?php if ($bike['frame_number']): ?><p class="muted small">Rahmen-Nr.: <?= htmlspecialchars($bike['frame_number']) ?></p><?php endif; ?>
         <?php if ($bike['registration_number']): ?><p class="muted small">Kontrollschild-Nr.: <?= htmlspecialchars($bike['registration_number']) ?></p><?php endif; ?>
     </a>
+    <?php
+};
+?>
+
+<div class="card-grid">
+<?php foreach ($bikes as $bike): ?>
+    <?php $renderBikeCard($bike); ?>
 <?php endforeach; ?>
 <?php if (!$bikes): ?>
     <p class="muted">Noch keine Velos erfasst.</p>
 <?php endif; ?>
 </div>
+
+<?php if ($soldBikes): ?>
+<details class="panel collapsible sold-bikes">
+    <summary><h2>Verkaufte Velos (<?= count($soldBikes) ?>)</h2></summary>
+    <div class="card-grid">
+    <?php foreach ($soldBikes as $bike): ?>
+        <?php $renderBikeCard($bike); ?>
+    <?php endforeach; ?>
+    </div>
+</details>
+<?php endif; ?>
 <?php
 require __DIR__ . '/src/views/footer.php';

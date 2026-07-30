@@ -6,7 +6,7 @@ $pdo = Database::get();
 $id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
 $bike = ['name' => '', 'brand' => '', 'model' => '', 'model_year' => '', 'frame_size' => '', 'color' => '',
     'frame_number' => '', 'registration_number' => '', 'purchase_date' => '', 'purchase_price' => '', 'purchase_price_currency' => 'CHF', 'dealer' => '', 'weight_kg' => '', 'notes' => '',
-    'owner_person_id' => '', 'is_active' => 1];
+    'owner_person_id' => '', 'is_active' => 1, 'is_sold' => 0, 'sold_date' => ''];
 
 if ($id) {
     $stmt = $pdo->prepare('SELECT * FROM bikes WHERE id = ?');
@@ -41,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'notes' => trim($_POST['notes'] ?? '') ?: null,
         'owner_person_id' => $_POST['owner_person_id'] !== '' ? (int) $_POST['owner_person_id'] : null,
         'is_active' => isset($_POST['is_active']) ? 1 : 0,
+        'is_sold' => isset($_POST['is_sold']) ? 1 : 0,
+        'sold_date' => $_POST['sold_date'] ?: null,
     ];
 
     if ($data['name'] === '') {
@@ -50,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         if ($id) {
             $sql = 'UPDATE bikes SET name=?, brand=?, model=?, model_year=?, frame_size=?, color=?, frame_number=?, registration_number=?,
-                    purchase_date=?, purchase_price=?, purchase_price_currency=?, dealer=?, weight_kg=?, notes=?, owner_person_id=?, is_active=? WHERE id=?';
+                    purchase_date=?, purchase_price=?, purchase_price_currency=?, dealer=?, weight_kg=?, notes=?, owner_person_id=?, is_active=?, is_sold=?, sold_date=? WHERE id=?';
             $pdo->prepare($sql)->execute([...array_values($data), $id]);
         } else {
             $cols = implode(',', array_keys($data));
@@ -100,6 +102,8 @@ require __DIR__ . '/src/views/header.php';
     <label>Gewicht (kg)<input type="number" step="0.01" name="weight_kg" value="<?= htmlspecialchars((string) ($bike['weight_kg'] ?? '')) ?>"></label>
     <label class="full">Notizen<textarea name="notes" rows="4"><?= htmlspecialchars($bike['notes'] ?? '') ?></textarea></label>
     <label class="checkbox"><input type="checkbox" name="is_active" <?= $bike['is_active'] ? 'checked' : '' ?>> Aktiv im Einsatz</label>
+    <label class="checkbox"><input type="checkbox" name="is_sold" <?= $bike['is_sold'] ? 'checked' : '' ?>> Verkauft</label>
+    <label>Verkaufsdatum<input type="date" name="sold_date" value="<?= htmlspecialchars($bike['sold_date'] ?? '') ?>"></label>
 
     <div class="form-actions">
         <button type="submit" class="button">Speichern</button>

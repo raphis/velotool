@@ -121,6 +121,8 @@ a:hover { text-decoration: underline; }
 }
 .collapsible[open] summary::before { transform: rotate(90deg); }
 .collapsible[open] summary { margin-bottom: 1rem; }
+.sold-bikes { margin-top: 1.25rem; }
+.sold-bikes .card-grid { opacity: 0.75; }
 
 .detail-grid { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; margin: 0; }
 .detail-grid dt { color: var(--muted); }
