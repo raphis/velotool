@@ -21,8 +21,11 @@
         <a href="/index.php">Velos</a>
         <a href="/catalog.php">Katalog &amp; Lager</a>
         <span class="user">
-            <?php if (Auth::userPicture()): ?><img src="<?= htmlspecialchars(Auth::userPicture()) ?>" class="avatar" alt=""><?php endif; ?>
+            <?php if (Auth::userPicture()): ?>
+            <img src="<?= htmlspecialchars(Auth::userPicture()) ?>" class="avatar" alt="<?= htmlspecialchars(Auth::userName()) ?>">
+            <?php else: ?>
             <?= htmlspecialchars(Auth::userName()) ?>
+            <?php endif; ?>
         </span>
         <a href="/logout.php">Abmelden</a>
     </nav>
