@@ -21,6 +21,7 @@ require __DIR__ . '/src/views/header.php';
 </div>
 
 <?php if ($items): ?>
+<div class="table-scroll">
 <table class="data-table">
     <thead><tr><th>Teil</th><th>Für Velo</th><th>Lieferant</th><th>Preis</th><th>Auf Lager</th><th></th></tr></thead>
     <tbody>
@@ -42,6 +43,7 @@ require __DIR__ . '/src/views/header.php';
     <?php endforeach; ?>
     </tbody>
 </table>
+</div>
 <?php else: ?>
     <p class="muted">Noch keine Katalog-Teile erfasst.</p>
 <?php endif; ?>

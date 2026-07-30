@@ -100,7 +100,9 @@ a:hover { text-decoration: underline; }
     border-radius: 12px;
     padding: 1.25rem;
     margin-bottom: 1.25rem;
+    overflow-x: auto;
 }
+.table-scroll { overflow-x: auto; }
 .panel h2 { margin-top: 0; font-size: 1.05rem; }
 
 .collapsible summary {
@@ -231,3 +233,28 @@ a:hover { text-decoration: underline; }
     margin: 10vh auto;
 }
 .auth-logo { width: 96px; height: 96px; margin-bottom: 1rem; }
+
+@media (max-width: 640px) {
+    .content { padding: 1rem; }
+    .topbar { padding: 0.6rem 1rem; flex-wrap: wrap; row-gap: 0.5rem; }
+    .brand { font-size: 1.05rem; }
+    .brand-logo { width: 28px; height: 28px; }
+    .topnav { gap: 0.75rem; font-size: 0.9rem; flex-wrap: wrap; }
+    .user { font-size: 0.85rem; }
+
+    .page-header { flex-direction: column; align-items: stretch; }
+    .actions { flex-direction: column; }
+    .actions .button { width: 100%; text-align: center; }
+
+    .panel { padding: 1rem; }
+
+    .form { grid-template-columns: 1fr; max-width: none; }
+
+    .data-table { font-size: 0.9rem; }
+    .data-table th, .data-table td { padding: 0.4rem 0.45rem; }
+
+    .card-grid { grid-template-columns: 1fr; }
+    .photo-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+
+    .auth-page { margin: 6vh auto; padding: 0 1rem; }
+}
