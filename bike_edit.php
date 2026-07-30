@@ -102,8 +102,8 @@ require __DIR__ . '/src/views/header.php';
     <label>Gewicht (kg)<input type="number" step="0.01" name="weight_kg" value="<?= htmlspecialchars((string) ($bike['weight_kg'] ?? '')) ?>"></label>
     <label class="full">Notizen<textarea name="notes" rows="4"><?= htmlspecialchars($bike['notes'] ?? '') ?></textarea></label>
     <label class="checkbox"><input type="checkbox" name="is_active" <?= $bike['is_active'] ? 'checked' : '' ?>> Aktiv im Einsatz</label>
-    <label class="checkbox"><input type="checkbox" name="is_sold" <?= $bike['is_sold'] ? 'checked' : '' ?>> Verkauft</label>
-    <label>Verkaufsdatum<input type="date" name="sold_date" value="<?= htmlspecialchars($bike['sold_date'] ?? '') ?>"></label>
+    <label class="checkbox"><input type="checkbox" id="isSoldCheckbox" name="is_sold" onchange="document.getElementById('soldDateField').style.display = this.checked ? '' : 'none';" <?= $bike['is_sold'] ? 'checked' : '' ?>> Verkauft</label>
+    <label id="soldDateField" style="<?= $bike['is_sold'] ? '' : 'display:none' ?>">Verkaufsdatum<input type="date" name="sold_date" value="<?= htmlspecialchars($bike['sold_date'] ?? '') ?>"></label>
 
     <div class="form-actions">
         <button type="submit" class="button">Speichern</button>
